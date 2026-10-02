@@ -1,9 +1,18 @@
+<div align="center">
+
 # Agentarium
 
-[![CI](https://github.com/oney-erge/Agentarium/actions/workflows/ci.yml/badge.svg)](https://github.com/oney-erge/Agentarium/actions/workflows/ci.yml)
+**A visual physics sandbox where LLM agents build bridges, creatures, and machines, watch the replay, and try again.**
 
-**A visual AI physics sandbox where LLM agents build objects in simulated
-worlds, run experiments, and improve their designs from replayed results.**
+[![CI](https://github.com/oney-erge/Agentarium/actions/workflows/ci.yml/badge.svg)](https://github.com/oney-erge/Agentarium/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
+
+![Agentarium Studio replaying a Bridge Builder run: a crate rolls down a ramp and across a bridge to the goal flag while the tool-call log, score card, and design summary update](docs/assets/demo.gif)
+
+<sub>Studio replaying the built-in offline demo run. The `mock` provider issues scripted tool calls, so this needs no API key and no model.</sub>
+
+</div>
 
 Give an agent a challenge, a world, a physics engine, and a set of explicit
 tools. The agent builds creatures, bridges, machines, or tiny environments; the
@@ -14,53 +23,58 @@ and the run is scored with explainable metrics.
 Setup → tools → design → simulation → replay → score → next attempt
 ```
 
-> An agent tries to build something that crosses a small simulated world. It
-> fails visibly, inspects the replay, adjusts the design, and tries again.
-
-## Run it (one command)
-
-You don't need to install Python, set up a virtualenv, or install Node. One
-command does everything and opens the app in your browser.
-
-**Windows**
-
-```powershell
-.\run.bat
-```
-
-Use `.\run.ps1` when you want to stay in PowerShell.
-
-**macOS**
+## Quick start
 
 ```bash
-./run.command
+git clone https://github.com/oney-erge/Agentarium.git
+cd Agentarium
+./run.sh            # Linux. macOS: ./run.command   Windows: .\run.bat
 ```
 
-**Linux**
+The launcher installs [`uv`](https://docs.astral.sh/uv/) if needed (which
+manages Python for you), installs dependencies, and opens Agentarium at
+**http://localhost:8765**. A prebuilt web UI ships with the repo, so **Node is
+not required**. The first run downloads dependencies and takes a minute or two;
+after that it starts in seconds. Press `Ctrl+C` to stop.
 
-```bash
-./run.sh
-```
+No API key is needed to look around: the offline `mock` provider runs the whole
+loop with scripted tool calls. To let a real model drive, point Agentarium at
+[LocalDeploy](https://github.com/oney-erge/LocalDeploy) or any OpenAI-compatible
+endpoint (see [OpenAI API key](#openai-api-key)).
 
-You can double-click `run.bat` on Windows or `run.command` on macOS.
+## Why Agentarium
+
+- **Agents act only through validated tools.** 24 explicit tools, and every
+  design mutation goes through one chokepoint, so a bad tool call cannot crash
+  the physics engine.
+- **Every attempt is replayable.** Scrub the construction timeline and the
+  physics timeline, and compare two to four replays side by side.
+- **Runs are reproducible.** Provider, model, seed, benchmark fingerprint, token
+  usage, latency, and prompts are recorded per turn, and paired
+  model × seed × repeat experiments report mean/SD, confidence intervals, and
+  win/tie/loss deltas.
+- **It runs offline.** The `mock` provider needs no network, and the 2D physics
+  engine (Pymunk) runs on the CPU, so no GPU is involved.
+- **It reaches toward real robots, carefully.** Physical Lab uses the same typed
+  observation/action boundary against a mock rover or a ROS 2 gateway. It is not
+  a certified safety controller.
+
+*Not to be confused with [Thytu/Agentarium](https://github.com/Thytu/Agentarium),
+a different project: a Python framework for simulations populated by AI agents.*
+
+<details>
+<summary>Launcher details and the manual route</summary>
+
 Every launcher accepts the same actions: `doctor`, `repair`, `docker`, `logs`,
 and `stop`. Docker binds the UI to loopback and persists run data in a named
-volume.
+volume. You can double-click `run.bat` on Windows or `run.command` on macOS, and
+use `.\run.ps1` to stay in PowerShell.
 
 Setup checks disk space, serializes concurrent installs, and retries temporary
 network failures up to three times. If it cannot finish, see
 `.setup/install.log` for the persistent failure record.
 
-The launcher installs [`uv`](https://docs.astral.sh/uv/) if needed (which
-manages Python for you), installs dependencies, and starts Agentarium at
-**http://localhost:8765**. A prebuilt web UI ships with the repo, so **Node is
-not required**.
-
-> First run downloads dependencies and takes a minute or two; after that it
-> starts in seconds. Press `Ctrl+C` to stop.
-
-<details>
-<summary>Prefer to run things yourself? (the manual route)</summary>
+To run things yourself:
 
 ```bash
 uv sync --all-groups                 # install Python + deps
@@ -76,6 +90,7 @@ cd frontend && npm install && npm run build
 
 `make run`, `make serve`, `make ui`, `make test`, and `make lint` wrap the same
 commands.
+
 </details>
 
 ## What you get
