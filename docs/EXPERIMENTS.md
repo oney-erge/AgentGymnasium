@@ -84,7 +84,7 @@ repeats: 2
 Run it with:
 
 ```bash
-uv run agentarium sweep --matrix experiment.yaml
+uv run agentgymnasium sweep --matrix experiment.yaml
 ```
 
 The CLI prints the completed record, aggregates, and paired comparisons as JSON. API keys can be
@@ -99,4 +99,4 @@ metrics, provider/model/seed, tokens, latency, and tool-call protocol side by
 side. Studio's Model Inspector exposes each persisted prompt/result turn.
 
 Experiment records live under `runs/experiments/`; ordinary run data is indexed
-in `runs/agentarium.db` and stored under `runs/<trace_run_id>/`.
+in `runs/agentgymnasium.db` and stored under `runs/<trace_run_id>/`.

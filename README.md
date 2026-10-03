@@ -71,14 +71,18 @@ Setup checks disk space, serializes concurrent installs, and retries temporary
 network failures up to three times. If it cannot finish, see
 `.setup/install.log` for the persistent failure record.
 
-The project was renamed from Agentarium to AgentGymnasium. The Python package, the `agentarium`
-command, and the `AGENTARIUM_*` environment variables keep their original names for now.
+The project was renamed from Agentarium to AgentGymnasium. The old names still work: the `agentarium`
+command runs `agentgymnasium`, `AGENTARIUM_*` environment variables are read when the matching
+`AGENTGYMNASIUM_*` one is not set, and an existing `runs/agentarium.db` keeps being used until
+`runs/agentgymnasium.db` exists. With Docker, run data lived in a volume named for the old service
+(`<project>_agentarium-runs`); the new service uses `<project>_agentgymnasium-runs`, so copy the data over
+if you want to keep it.
 
 To run things yourself:
 
 ```bash
 uv sync --all-groups                 # install Python + deps
-uv run agentarium serve --open       # start the server, open the browser
+uv run agentgymnasium serve --open       # start the server, open the browser
 ```
 
 To rebuild the web UI (only needed if you change the frontend; requires Node
@@ -157,16 +161,16 @@ spread, and nearest-neighbour spacing (livability).
   OpenAI-compatible endpoint. Connection probes are short; generation calls have
   configurable timeouts and retry/backoff, and surface structured errors
   (auth / rate-limit / server / timeout / malformed). Tune via env vars:
-  `AGENTARIUM_LLM_TIMEOUT_S` (default 120), `AGENTARIUM_LLM_RETRIES` (default 2),
-  `AGENTARIUM_LLM_BACKOFF_S` (default 0.5).
+  `AGENTGYMNASIUM_LLM_TIMEOUT_S` (default 120), `AGENTGYMNASIUM_LLM_RETRIES` (default 2),
+  `AGENTGYMNASIUM_LLM_BACKOFF_S` (default 0.5).
 
 ### Headless runs and sweeps
 
 The UI and automation use the same schemas and run pipeline:
 
 ```bash
-uv run agentarium run --config path/to/launch.yaml --seed 42
-uv run agentarium sweep --matrix path/to/experiment.yaml
+uv run agentgymnasium run --config path/to/launch.yaml --seed 42
+uv run agentgymnasium sweep --matrix path/to/experiment.yaml
 ```
 
 Both commands print machine-readable JSON. Sweep cells remain ordinary durable
@@ -178,10 +182,10 @@ Physical Lab always includes an offline mock rover. A real robot-side gateway
 can be registered without adding ROS dependencies to the AgentGymnasium server:
 
 ```bash
-AGENTARIUM_ROS2_GATEWAY_URL=http://robot-gateway:8080
-AGENTARIUM_ROS2_GATEWAY_TOKEN=robot-side-secret
-AGENTARIUM_OPERATOR_KEY=human-arming-secret
-uv run agentarium serve
+AGENTGYMNASIUM_ROS2_GATEWAY_URL=http://robot-gateway:8080
+AGENTGYMNASIUM_ROS2_GATEWAY_TOKEN=robot-side-secret
+AGENTGYMNASIUM_OPERATOR_KEY=human-arming-secret
+uv run agentgymnasium serve
 ```
 
 Real-device arming also requires the operator key in the UI. AgentGymnasium only
@@ -220,10 +224,10 @@ npm --prefix frontend run lint # frontend lint
 
 # Browser UI diagnosis — drives the Studio and Setup screens in headless Chromium
 uv run python -m playwright install chromium   # one-time browser download
-AGENTARIUM_VISUAL_TESTS=1 uv run pytest backend/tests/test_visual_playwright.py
+AGENTGYMNASIUM_VISUAL_TESTS=1 uv run pytest backend/tests/test_visual_playwright.py
 
 # Optional live OpenAI smoke checks (normal tests stay offline)
-AGENTARIUM_LIVE_OPENAI_TESTS=1 uv run pytest backend/tests/test_openai_live_smoke.py
+AGENTGYMNASIUM_LIVE_OPENAI_TESTS=1 uv run pytest backend/tests/test_openai_live_smoke.py
 ```
 
 CI runs lint + tests + the frontend build on every push and PR. Backend changes

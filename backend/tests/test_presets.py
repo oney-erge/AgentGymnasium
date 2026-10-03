@@ -3,15 +3,15 @@ import uuid
 import pytest
 from fastapi.testclient import TestClient
 
-from agentarium.app import app
-from agentarium.core.schemas.setup import (
+from agentgymnasium.app import app
+from agentgymnasium.core.schemas.setup import (
     LaunchConfig,
     LaunchState,
     ScenarioConfig,
     ToolsConfig,
     WorldConfig,
 )
-from agentarium.setup.validators import validate_launch_config
+from agentgymnasium.setup.validators import validate_launch_config
 
 client = TestClient(app)
 

@@ -8,7 +8,7 @@ import pathlib
 
 from fastapi.testclient import TestClient
 
-from agentarium.app import app
+from agentgymnasium.app import app
 
 client = TestClient(app)
 
@@ -16,11 +16,11 @@ client = TestClient(app)
 def test_static_bundle_is_committed():
     static = (
         pathlib.Path(__file__).resolve().parents[1]
-        / "agentarium"
+        / "agentgymnasium"
         / "static"
         / "index.html"
     )
-    assert static.is_file(), "built web UI must be committed at agentarium/static/index.html"
+    assert static.is_file(), "built web UI must be committed at agentgymnasium/static/index.html"
 
 
 def test_root_serves_spa_html():

@@ -1,8 +1,8 @@
 """max_parts / max_joints budgets are enforced at the apply chokepoint."""
 from __future__ import annotations
 
-from agentarium.core.schemas.design import DesignSpec
-from agentarium.tools.apply import apply_tool_call, material_units
+from agentgymnasium.core.schemas.design import DesignSpec
+from agentgymnasium.tools.apply import apply_tool_call, material_units
 
 _BUILD_TOOLS = ["create_body", "add_ball", "add_joint"]
 

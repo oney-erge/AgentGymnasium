@@ -2,8 +2,8 @@ import asyncio
 
 from fastapi.testclient import TestClient
 
-from agentarium.app import app
-from agentarium.core.schemas.setup import (
+from agentgymnasium.app import app
+from agentgymnasium.core.schemas.setup import (
     AgentConfig,
     AgentsConfig,
     CollaborationMode,
@@ -14,8 +14,8 @@ from agentarium.core.schemas.setup import (
     ToolsConfig,
     WorldConfig,
 )
-from agentarium.services import orchestrator
-from agentarium.services.orchestrator import RunManager
+from agentgymnasium.services import orchestrator
+from agentgymnasium.services.orchestrator import RunManager
 
 # Keep streaming instant in tests.
 orchestrator.STREAM_DELAY = 0.0
@@ -237,8 +237,8 @@ def test_run_started_reports_effective_caps():
         started = manager.get_events(run_id)[0]
         assert started["type"] == "run_started"
         # Effective single-agent cap is the ceiling; sim cap too; requests echoed.
-        from agentarium.agents.runner import _MAX_SIM_DURATION_SECONDS
-        from agentarium.services.orchestrator import MAX_ATTEMPTS_CAP
+        from agentgymnasium.agents.runner import _MAX_SIM_DURATION_SECONDS
+        from agentgymnasium.services.orchestrator import MAX_ATTEMPTS_CAP
 
         assert started["max_attempts"] == MAX_ATTEMPTS_CAP
         assert started["requested_attempts"] == 50

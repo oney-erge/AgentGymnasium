@@ -3,9 +3,9 @@ import uuid
 
 from fastapi.testclient import TestClient
 
-from agentarium.agents.runner import run_single_attempt
-from agentarium.app import app
-from agentarium.core.schemas.setup import (
+from agentgymnasium.agents.runner import run_single_attempt
+from agentgymnasium.app import app
+from agentgymnasium.core.schemas.setup import (
     AgentConfig,
     AgentsConfig,
     LaunchConfig,

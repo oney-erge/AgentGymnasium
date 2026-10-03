@@ -1,8 +1,8 @@
-from agentarium.agents.mock_provider import _calls_for_prompt
-from agentarium.agents.runner import _project_name
-from agentarium.core.schemas.design import DesignSpec
-from agentarium.core.schemas.setup import LaunchConfig, ScenarioConfig, WorldConfig
-from agentarium.tools.apply import apply_tool_call
+from agentgymnasium.agents.mock_provider import _calls_for_prompt
+from agentgymnasium.agents.runner import _project_name
+from agentgymnasium.core.schemas.design import DesignSpec
+from agentgymnasium.core.schemas.setup import LaunchConfig, ScenarioConfig, WorldConfig
+from agentgymnasium.tools.apply import apply_tool_call
 
 
 def test_create_body_preserves_semantic_color() -> None:

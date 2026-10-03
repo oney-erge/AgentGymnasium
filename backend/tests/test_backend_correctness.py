@@ -5,14 +5,14 @@ import sqlite3
 
 import pytest
 
-from agentarium.core.schemas.design import DesignSpec
-from agentarium.core.schemas.setup import WorldConfig
-from agentarium.services import preset_service, run_service
-from agentarium.services.run_service import (
+from agentgymnasium.core.schemas.design import DesignSpec
+from agentgymnasium.core.schemas.setup import WorldConfig
+from agentgymnasium.services import preset_service, run_service
+from agentgymnasium.services.run_service import (
     create_run_from_design,
     hardcoded_demo_design,
 )
-from agentarium.tools.apply import apply_tool_call
+from agentgymnasium.tools.apply import apply_tool_call
 
 _TOOLS = ["create_body", "add_joint", "add_motor"]
 
@@ -104,8 +104,8 @@ def test_engine_records_final_frame(tmp_path, monkeypatch):
 def test_save_preset_rejects_path_traversal(tmp_path, monkeypatch):
     import pathlib
 
-    from agentarium.core.schemas.setup import LaunchConfig, ScenarioConfig
-    from agentarium.core.schemas.setup import WorldConfig as WC
+    from agentgymnasium.core.schemas.setup import LaunchConfig, ScenarioConfig
+    from agentgymnasium.core.schemas.setup import WorldConfig as WC
 
     monkeypatch.setattr(preset_service, "_SAVED_PRESETS_DIR", tmp_path / "presets")
     cfg = LaunchConfig(

@@ -42,12 +42,12 @@ flowchart TD
 
 | Layer | Path | Responsibility |
 | --- | --- | --- |
-| Schemas | `backend/agentarium/core/schemas` | Pydantic v2 models for launches, models, experiments, designs, traces, scores, tools, and embodiment. |
-| Tools | `backend/agentarium/tools` | Registry of 24 tools + the single `apply_tool_call` mutation chokepoint. |
-| Engines | `backend/agentarium/engines` | `EngineAdapter` base + Pymunk2D engine producing engine-neutral traces. |
-| Agents | `backend/agentarium/agents` | Providers (mock / localdeploy / OpenAI-compatible / manual), prompts, and the attempt runner. |
-| Services | `backend/agentarium/services` | Run/experiment orchestration, scoring, presets, durable storage, exports, embodiment supervision and episodes. |
-| API | `backend/agentarium/api` | Routers for setup, tools, presets, runs, experiments, embodiments, exports, and WebSocket. |
+| Schemas | `backend/agentgymnasium/core/schemas` | Pydantic v2 models for launches, models, experiments, designs, traces, scores, tools, and embodiment. |
+| Tools | `backend/agentgymnasium/tools` | Registry of 24 tools + the single `apply_tool_call` mutation chokepoint. |
+| Engines | `backend/agentgymnasium/engines` | `EngineAdapter` base + Pymunk2D engine producing engine-neutral traces. |
+| Agents | `backend/agentgymnasium/agents` | Providers (mock / localdeploy / OpenAI-compatible / manual), prompts, and the attempt runner. |
+| Services | `backend/agentgymnasium/services` | Run/experiment orchestration, scoring, presets, durable storage, exports, embodiment supervision and episodes. |
+| API | `backend/agentgymnasium/api` | Routers for setup, tools, presets, runs, experiments, embodiments, exports, and WebSocket. |
 | Renderer | `frontend/src/phaser` | Side-view + isometric Phaser visual system that consumes **only** `EpisodeTrace`; deterministic themes, semantic props, joints, effects, beauty/engineering overlays. |
 | Screens | `frontend/src/screens` | Setup, Studio, History, Experiments, Compare, Physical Lab, and the deterministic Visual Catalog. |
 
@@ -196,7 +196,7 @@ rejected, no-op, and synthetic repair-pass steps each carry mutation metadata an
 an un-simulated one-frame trace. `GET /api/runs/{run_id}/snapshots` returns those
 steps for historical Studio replay; older runs without the file return `[]`.
 
-**SQLite** (`runs/agentarium.db`) write-throughs the trace, score, and design for
+**SQLite** (`runs/agentgymnasium.db`) write-throughs the trace, score, and design for
 every run plus a queryable `run_meta` row (challenge, mode, reward, score, success,
 artifact dir, timestamp). `get_trace/score/design` fall back to the DB when a run is
 evicted from memory, and the last ~200 runs reload on startup — so replay, run

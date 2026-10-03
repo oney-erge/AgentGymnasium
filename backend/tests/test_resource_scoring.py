@@ -1,7 +1,7 @@
-from agentarium.agents.runner import _apply_score_constraints
-from agentarium.core.schemas.design import BodySpec, DesignSpec, JointSpec
-from agentarium.core.schemas.score import ScoreCard
-from agentarium.core.schemas.setup import (
+from agentgymnasium.agents.runner import _apply_score_constraints
+from agentgymnasium.core.schemas.design import BodySpec, DesignSpec, JointSpec
+from agentgymnasium.core.schemas.score import ScoreCard
+from agentgymnasium.core.schemas.setup import (
     AgentConfig,
     AgentsConfig,
     ConstraintsConfig,

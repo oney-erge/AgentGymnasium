@@ -1,4 +1,4 @@
-// Auto-mirrored from backend/agentarium/core/schemas/setup.py — keep in sync.
+// Auto-mirrored from backend/agentgymnasium/core/schemas/setup.py — keep in sync.
 
 export type CollaborationMode =
   | 'single'
@@ -205,7 +205,7 @@ export interface WorkspaceConfigStatus {
   mtime_ns?: number | null
 }
 
-// ─── Episode trace (mirrors backend/agentarium/core/schemas/trace.py) ──────────
+// ─── Episode trace (mirrors backend/agentgymnasium/core/schemas/trace.py) ──────────
 
 export interface VisualSpec {
   variant?: string | null

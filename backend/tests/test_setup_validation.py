@@ -6,7 +6,7 @@ from typing import Any
 import httpx
 from fastapi.testclient import TestClient
 
-from agentarium.app import app
+from agentgymnasium.app import app
 
 client = TestClient(app)
 
@@ -121,7 +121,7 @@ def test_remote_provider_rejects_model_not_returned_by_endpoint(monkeypatch) -> 
         }
     )
     config["llm_connection"] = {"endpoint_url": "https://api.openai.com/v1"}
-    monkeypatch.setattr("agentarium.setup.validators.httpx.AsyncClient", _Client)
+    monkeypatch.setattr("agentgymnasium.setup.validators.httpx.AsyncClient", _Client)
 
     body = _post(config)
 

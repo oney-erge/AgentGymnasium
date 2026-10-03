@@ -7,11 +7,11 @@ orchestrator evicts only oldest FINISHED runs (never in-flight ones).
 
 from __future__ import annotations
 
-from agentarium.core.schemas.design import BodyShape, BodySpec, DesignSpec
-from agentarium.core.schemas.score import ScoreCard
-from agentarium.core.schemas.trace import EpisodeTrace
-from agentarium.services import orchestrator, run_service
-from agentarium.services.orchestrator import RunManager, _RunState
+from agentgymnasium.core.schemas.design import BodyShape, BodySpec, DesignSpec
+from agentgymnasium.core.schemas.score import ScoreCard
+from agentgymnasium.core.schemas.trace import EpisodeTrace
+from agentgymnasium.services import orchestrator, run_service
+from agentgymnasium.services.orchestrator import RunManager, _RunState
 
 
 def test_run_service_evicts_oldest_across_all_stores(monkeypatch):
@@ -76,7 +76,7 @@ def test_create_run_from_design_respects_cap(monkeypatch):
     run_service.SCORES.clear()
     run_service.DESIGNS.clear()
 
-    from agentarium.core.schemas.setup import WorldConfig
+    from agentgymnasium.core.schemas.setup import WorldConfig
 
     design = DesignSpec(
         bodies=[BodySpec(id="ball", shape=BodyShape.circle, position=[0.0, 5.0])]

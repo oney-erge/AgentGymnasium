@@ -23,7 +23,7 @@ These were confirmed by reading the code and the shipped preview PNGs.
 
 | # | Finding | Evidence | Consequence |
 |---|---------|----------|-------------|
-| R1 | **A single continuous static ground segment spans the whole map at y=0** for *every* world. | `backend/agentarium/engines/pymunk2d/builder.py:139‑147` (`pymunk.Segment((-map_width,0),(map_width,0))`). | No challenge can have a real gap/pit/chasm. The Bridge "gap" is empty air above a solid invisible floor — the ball can never fall in, so a bridge is never physically required (at best a curb‑climb). |
+| R1 | **A single continuous static ground segment spans the whole map at y=0** for *every* world. | `backend/agentgymnasium/engines/pymunk2d/builder.py:139‑147` (`pymunk.Segment((-map_width,0),(map_width,0))`). | No challenge can have a real gap/pit/chasm. The Bridge "gap" is empty air above a solid invisible floor — the ball can never fall in, so a bridge is never physically required (at best a curb‑climb). |
 | R2 | **The renderer paints one continuous ground band** from y=0 down, full width. | `frontend/src/phaser/TraceRenderer.ts:230 drawGround`. | Even if physics had a chasm, the UI would hide it. Bridge/pit challenges can't read visually. |
 | R3 | **Scores are metric proxies, only loosely tied to the physical goal.** | `services/scoring_service.py` — `city_score` is a layout heuristic; bridge/crawl read "furthest‑travelling dynamic body"; no "fell into chasm", no deck‑deflection, no per‑ball correct‑bin certainty when bins are unlabeled. | An attempt can score without looking right; the number doesn't match what the eye sees. |
 | R4 | **World scaffolds are thin gray primitives with tiny/again‑gray goal markers.** | `worlds/templates/*.yaml`, `challenges/*.yaml`; goal is a 0.4‑wide box, rendered as a faint ring/flag (`props.ts drawGoal`). | Nothing reads as a cliff, ravine, hopper, finish line, or labeled bin. See `frontend/public/presets/bridge-builder.png`. |
@@ -135,7 +135,7 @@ in `backend/tests/` (mock provider, short sims). **Backend behavior change ⇒ t
 ## Phase 4 — Regenerate stale preset preview images (R4)
 
 The card thumbnails in `frontend/public/presets/*.png` (and the committed copies under
-`backend/agentarium/static/presets/`) are old renders that no longer match the redesigned
+`backend/agentgymnasium/static/presets/`) are old renders that no longer match the redesigned
 worlds. Regenerate them from the **golden designs** via the self‑eval harness (Phase 5) so the
 Setup cards show the real, improved scenes, and commit the regenerated PNGs.
 
@@ -161,7 +161,7 @@ and **reads the PNG back with vision** to judge "does this look like a bridge / 
    each PNG and writes a short verdict ("bridge spans the ravine ✅ / goal flag readable ✅ /
    deck sags ❌"). This closes the loop the user asked for.
 4. **Make it cheap to run.** One command (documented in `CLAUDE.md` Commands), gated so normal
-   `pytest` stays fast (reuse `AGENTARIUM_VISUAL_TESTS=1`). Chromium is preinstalled
+   `pytest` stays fast (reuse `AGENTGYMNASIUM_VISUAL_TESTS=1`). Chromium is preinstalled
    (`/opt/pw-browsers`), so no download.
 
 Acceptance: running the loop produces `*-final.png` for all four challenges that visibly read
@@ -179,7 +179,7 @@ independent, can land anytime) → Phase 4 (regenerate previews, last) .
 1. `uv run ruff check .` clean.
 2. `uv run pytest` passes (new/updated tests for each backend behavior change).
 3. `cd frontend && npm run build` compiles when frontend changed; **commit the regenerated
-   `backend/agentarium/static/` bundle in the same change.**
+   `backend/agentgymnasium/static/` bundle in the same change.**
 4. For visual work: the Phase‑5 self‑eval screenshots reviewed and judged acceptable.
 
 **Docs to keep current in the same commits:** `docs/remaining_gaps.md` (L1, and new rows for

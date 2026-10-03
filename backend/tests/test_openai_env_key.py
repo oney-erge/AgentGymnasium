@@ -3,8 +3,8 @@ environment so it never has to be pasted into the UI or saved config — but
 LocalDeploy (a subclass that needs no key) must not pick it up."""
 from __future__ import annotations
 
-from agentarium.agents.localdeploy import LocalDeployProvider
-from agentarium.agents.openai_compatible import (
+from agentgymnasium.agents.localdeploy import LocalDeployProvider
+from agentgymnasium.agents.openai_compatible import (
     OpenAICompatibleProvider,
     mask_secret,
     openai_env_key,

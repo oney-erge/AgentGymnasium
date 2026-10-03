@@ -3,11 +3,11 @@ from __future__ import annotations
 
 import pytest
 
-from agentarium.core.schemas.design import BodySpec, DesignSpec
-from agentarium.core.schemas.setup import WorldConfig
-from agentarium.engines.pymunk2d.builder import build_space
-from agentarium.tools.apply import apply_tool_call
-from agentarium.tools.registry import get_tool
+from agentgymnasium.core.schemas.design import BodySpec, DesignSpec
+from agentgymnasium.core.schemas.setup import WorldConfig
+from agentgymnasium.engines.pymunk2d.builder import build_space
+from agentgymnasium.tools.apply import apply_tool_call
+from agentgymnasium.tools.registry import get_tool
 
 _ALL = [
     "set_density", "set_gravity", "add_sensor", "set_controller",

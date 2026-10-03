@@ -1,13 +1,13 @@
 import asyncio
 
-from agentarium.agents.runner import (
+from agentgymnasium.agents.runner import (
     AttemptResult,
     _build_memory,
     _repair_rejected,
 )
-from agentarium.core.schemas.design import BodyShape, BodySpec, DesignSpec
-from agentarium.core.schemas.score import ScoreCard
-from agentarium.core.schemas.setup import (
+from agentgymnasium.core.schemas.design import BodyShape, BodySpec, DesignSpec
+from agentgymnasium.core.schemas.score import ScoreCard
+from agentgymnasium.core.schemas.setup import (
     AgentConfig,
     AgentsConfig,
     ConstraintsConfig,
@@ -18,14 +18,14 @@ from agentarium.core.schemas.setup import (
     ToolsConfig,
     WorldConfig,
 )
-from agentarium.core.schemas.toolcall import (
+from agentgymnasium.core.schemas.toolcall import (
     ToolCallRecord,
     ToolCallStatus,
 )
-from agentarium.core.schemas.trace import EpisodeTrace, Frame, FrameBody
-from agentarium.services import orchestrator
-from agentarium.services.orchestrator import RunManager
-from agentarium.services.scoring_service import score_attempt
+from agentgymnasium.core.schemas.trace import EpisodeTrace, Frame, FrameBody
+from agentgymnasium.services import orchestrator
+from agentgymnasium.services.orchestrator import RunManager
+from agentgymnasium.services.scoring_service import score_attempt
 
 orchestrator.STREAM_DELAY = 0.0
 

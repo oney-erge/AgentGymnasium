@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 
-from agentarium.app import app
-from agentarium.core.schemas.setup import (
+from agentgymnasium.app import app
+from agentgymnasium.core.schemas.setup import (
     AgentsConfig,
     ConstraintsConfig,
     LaunchConfig,

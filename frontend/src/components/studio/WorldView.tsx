@@ -112,7 +112,7 @@ export const WorldView = forwardRef<WorldViewHandle, WorldViewProps>(function Wo
       if (!(image instanceof HTMLImageElement)) return
       downloadHref(
         image.src,
-        `agentarium-frame-${trace?.run_id ?? 'view'}-${frameIndex}.png`,
+        `agentgymnasium-frame-${trace?.run_id ?? 'view'}-${frameIndex}.png`,
       )
     })
   }
@@ -154,7 +154,7 @@ export const WorldView = forwardRef<WorldViewHandle, WorldViewProps>(function Wo
         }
         const blob = new Blob(chunks, { type: mimeType ?? 'video/webm' })
         const url = URL.createObjectURL(blob)
-        downloadHref(url, `agentarium-replay-${trace?.run_id ?? 'view'}.webm`)
+        downloadHref(url, `agentgymnasium-replay-${trace?.run_id ?? 'view'}.webm`)
         window.setTimeout(() => URL.revokeObjectURL(url), 1000)
         resolve()
       }

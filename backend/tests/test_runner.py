@@ -1,11 +1,11 @@
 import asyncio
 import pathlib
 
-from agentarium.agents.base import AgentProvider, ProviderStatus, StructuredOutputResult
-from agentarium.agents.runner import AttemptResult, _seed_world, run_single_attempt
-from agentarium.core.schemas.design import DesignSpec
-from agentarium.core.schemas.score import ScoreCard
-from agentarium.core.schemas.setup import (
+from agentgymnasium.agents.base import AgentProvider, ProviderStatus, StructuredOutputResult
+from agentgymnasium.agents.runner import AttemptResult, _seed_world, run_single_attempt
+from agentgymnasium.core.schemas.design import DesignSpec
+from agentgymnasium.core.schemas.score import ScoreCard
+from agentgymnasium.core.schemas.setup import (
     AgentConfig,
     AgentsConfig,
     LaunchConfig,
@@ -15,7 +15,7 @@ from agentarium.core.schemas.setup import (
     ToolsConfig,
     WorldConfig,
 )
-from agentarium.services.run_service import get_trace
+from agentgymnasium.services.run_service import get_trace
 
 
 def _config() -> LaunchConfig:
@@ -108,8 +108,8 @@ def test_city_challenge_mock_scene_has_varied_kinds():
 def test_city_prompt_does_not_require_movable_body():
     # Tiny City's objective is a mostly-static scene; forcing a "must include a
     # movable body" rule would contradict the objective and confuse real LLMs.
-    from agentarium.agents.prompts import build_system_prompt
-    from agentarium.tools.registry import get_tool
+    from agentgymnasium.agents.prompts import build_system_prompt
+    from agentgymnasium.tools.registry import get_tool
 
     tools = [get_tool("create_body")]
     default_prompt = build_system_prompt("Build a city", "world", tools)
@@ -252,7 +252,7 @@ def test_attempt_result_carries_per_step_design_snapshots():
 
 
 def test_requested_run_artifacts_are_materialized(monkeypatch, tmp_path):
-    import agentarium.agents.runner as runner_module
+    import agentgymnasium.agents.runner as runner_module
 
     monkeypatch.setattr(runner_module, "_RUNS_DIR", tmp_path)
     config = _config()
@@ -330,7 +330,7 @@ class _IterativeProvider(_DuplicateProvider):
 
 
 def test_real_provider_can_observe_and_take_multiple_turns(monkeypatch):
-    import agentarium.agents.runner as runner
+    import agentgymnasium.agents.runner as runner
 
     provider = _IterativeProvider()
     monkeypatch.setattr(runner, "get_provider", lambda _name: provider)
@@ -351,7 +351,7 @@ def test_real_provider_can_observe_and_take_multiple_turns(monkeypatch):
 
 
 def test_repair_pass_preserves_rejected_call_and_adds_timeline_step(monkeypatch):
-    import agentarium.agents.runner as runner
+    import agentgymnasium.agents.runner as runner
 
     monkeypatch.setattr(runner, "get_provider", lambda _name: _DuplicateProvider())
     result = asyncio.run(run_single_attempt(_config()))
@@ -371,8 +371,8 @@ def test_seed_world_propagates_ground_spans_and_kill_y(monkeypatch):
     # A world template's ground_spans/kill_y (a real gap/chasm) must reach the
     # design metadata so the engine can build the physics floor from it and the
     # trace can carry kill_y to the renderer.
-    import agentarium.agents.runner as runner_module
-    from agentarium.core.schemas.challenge import WorldTemplate
+    import agentgymnasium.agents.runner as runner_module
+    from agentgymnasium.core.schemas.challenge import WorldTemplate
 
     template = WorldTemplate(
         id="gappy",
@@ -393,8 +393,8 @@ def test_seed_world_propagates_ground_spans_and_kill_y(monkeypatch):
 
 
 def test_seed_world_omits_ground_spans_when_template_has_none(monkeypatch):
-    import agentarium.agents.runner as runner_module
-    from agentarium.core.schemas.challenge import WorldTemplate
+    import agentgymnasium.agents.runner as runner_module
+    from agentgymnasium.core.schemas.challenge import WorldTemplate
 
     template = WorldTemplate(id="flat", name="Flat", terrain="grassland", map_size=[32, 32])
     monkeypatch.setattr(runner_module, "get_world_template", lambda _tid: template)

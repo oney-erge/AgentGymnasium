@@ -413,10 +413,10 @@ export function PhysicalLabScreen() {
 }
 
 function controlHeaders(token: string): Record<string, string> {
-  return { 'X-Agentarium-Control-Token': token }
+  return { 'X-AgentGymnasium-Control-Token': token }
 }
 function operatorHeaders(key: string): Record<string, string> {
-  return key ? { 'X-Agentarium-Operator-Key': key } : {}
+  return key ? { 'X-AgentGymnasium-Operator-Key': key } : {}
 }
 function NumberField({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) {
   return (

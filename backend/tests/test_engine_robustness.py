@@ -9,9 +9,9 @@ from __future__ import annotations
 
 import math
 
-from agentarium.core.schemas.design import BodyShape, BodySpec, DesignSpec
-from agentarium.core.schemas.setup import WorldConfig
-from agentarium.engines.pymunk2d.engine import Pymunk2DEngine
+from agentgymnasium.core.schemas.design import BodyShape, BodySpec, DesignSpec
+from agentgymnasium.core.schemas.setup import WorldConfig
+from agentgymnasium.engines.pymunk2d.engine import Pymunk2DEngine
 
 
 def _simulate(design: DesignSpec):

@@ -30,7 +30,7 @@ matching table in the same change rather than letting these drift.
   installs uv, syncs deps, builds the UI if missing, serves, and opens the browser.
 - Lint: `uv run ruff check .`
 - Test: `uv run pytest`
-- Backend server: `uv run agentarium serve` (127.0.0.1:8765; `--open` opens a browser,
+- Backend server: `uv run agentgymnasium serve` (127.0.0.1:8765; `--open` opens a browser,
   `--no-reload` for a clean non-dev run)
 - Frontend build: `cd frontend && npm run build`
 - Frontend dev: `cd frontend && npm run dev` (5173, proxies /api + /ws to 8765)
@@ -67,7 +67,7 @@ provider so tests need no network; keep simulations short (≤ ~2s sim time).
 ## Architecture invariants (do not violate)
 
 1. **Agents only emit validated tool calls.** Every design mutation goes through the
-   single chokepoint `backend/agentarium/tools/apply.py::apply_tool_call`. Agents never
+   single chokepoint `backend/agentgymnasium/tools/apply.py::apply_tool_call`. Agents never
    touch the engine, renderer, or filesystem directly. High-risk tools default off.
 2. **The renderer consumes only `EpisodeTrace`.** Never read engine internals in the
    frontend. This keeps the engine swappable (Pymunk2D now, PyBullet3D later).
@@ -81,14 +81,14 @@ provider so tests need no network; keep simulations short (≤ ~2s sim time).
 
 ## Layout
 
-- `backend/agentarium/` — `core/schemas` (Pydantic v2), `api` (routers), `tools`
+- `backend/agentgymnasium/` — `core/schemas` (Pydantic v2), `api` (routers), `tools`
   (registry + apply chokepoint), `engines` (base + pymunk2d), `agents` (providers +
   runner + prompts), `services` (run/scoring/preset/orchestrator), `worlds`,
   `challenges`.
 - `frontend/src/` — `screens` (Setup, Studio), `components/setup`, `components/studio`,
   `phaser` (iso renderer), `api` (client + types).
 - `runs/` is generated — gitignored, never commit.
-- `backend/agentarium/static/` is the built web UI. It is **intentionally committed** so
+- `backend/agentgymnasium/static/` is the built web UI. It is **intentionally committed** so
   the app runs with no Node step (see `run.sh`). When you change the frontend, rebuild
   (`cd frontend && npm run build`) and commit the regenerated bundle in the same change.
   `uv.lock` is committed too, for deterministic installs.

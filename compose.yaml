@@ -1,16 +1,16 @@
 services:
-  agentarium:
+  agentgymnasium:
     build: .
-    image: agentarium:local
+    image: agentgymnasium:local
     init: true
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${AGENTARIUM_PORT:-8765}:8765"
+      - "127.0.0.1:${AGENTGYMNASIUM_PORT:-${AGENTARIUM_PORT:-8765}}:8765"
     volumes:
-      - agentarium-runs:/app/runs
+      - agentgymnasium-runs:/app/runs
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      AGENTARIUM_LLM_BASE_URL: ${AGENTARIUM_LLM_BASE_URL:-}
+      AGENTGYMNASIUM_LLM_BASE_URL: ${AGENTGYMNASIUM_LLM_BASE_URL:-${AGENTARIUM_LLM_BASE_URL:-}}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
@@ -21,4 +21,4 @@ services:
       start_period: 10s
 
 volumes:
-  agentarium-runs:
+  agentgymnasium-runs:

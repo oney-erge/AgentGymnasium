@@ -1,7 +1,7 @@
 """POST /api/setup/launch re-validates server-side and rejects bad configs."""
 from fastapi.testclient import TestClient
 
-from agentarium.app import app
+from agentgymnasium.app import app
 
 client = TestClient(app)
 

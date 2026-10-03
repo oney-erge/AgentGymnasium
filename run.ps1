@@ -22,7 +22,7 @@ function Resolve-Uv {
 }
 
 function Install-Uv {
-  $installer = Join-Path $env:TEMP "agentarium-uv-$UvVersion.ps1"
+  $installer = Join-Path $env:TEMP "agentgymnasium-uv-$UvVersion.ps1"
   try {
     Save-InstallDownload -Url "https://astral.sh/uv/$UvVersion/install.ps1" -Destination $installer -Label "uv download"
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer
@@ -71,9 +71,9 @@ if ($Action -in @("docker", "stop", "logs")) {
 $uv = Resolve-Uv
 if ($Action -eq "doctor") {
   if (-not $uv) { throw "uv is missing. Run .\run.ps1 once to install the managed runtime." }
-  & $uv run --frozen --no-sync agentarium --help *> $null
+  & $uv run --frozen --no-sync agentgymnasium --help *> $null
   if ($LASTEXITCODE -ne 0) { throw "The managed AgentGymnasium environment is missing or stale. Run .\run.ps1 repair." }
-  if (-not (Test-Path -LiteralPath "backend\agentarium\static\index.html")) { throw "The prebuilt web UI is missing." }
+  if (-not (Test-Path -LiteralPath "backend\agentgymnasium\static\index.html")) { throw "The prebuilt web UI is missing." }
   Write-Host "AgentGymnasium native environment is ready." -ForegroundColor Green
   exit 0
 }
@@ -90,7 +90,7 @@ Invoke-InstallRetry "dependency synchronization" {
   $output | Write-Host
 }
 
-if (-not (Test-Path -LiteralPath "backend\agentarium\static\index.html")) {
+if (-not (Test-Path -LiteralPath "backend\agentgymnasium\static\index.html")) {
   if (-not (Get-Command npm -ErrorAction SilentlyContinue)) { throw "The prebuilt UI is missing and Node/npm is unavailable. Restore the release payload or install Node 20+." }
   Push-Location frontend
   try {
@@ -110,7 +110,7 @@ if (Test-Ready "$Url/api/health") {
   if (-not $NoBrowser) { Start-Process $Url }
   exit 0
 }
-$serveArgs = @("run", "--frozen", "--no-sync", "agentarium", "serve", "--no-reload")
+$serveArgs = @("run", "--frozen", "--no-sync", "agentgymnasium", "serve", "--no-reload")
 if (-not $NoBrowser) { $serveArgs += "--open" }
 Write-Host "==> Starting AgentGymnasium at $Url" -ForegroundColor Cyan
 & $uv @serveArgs

@@ -9,10 +9,10 @@ from __future__ import annotations
 
 import math
 
-from agentarium.agents.runner import _inject_challenge_goal, _seed_scaffold, _seed_world
-from agentarium.core.schemas.design import BodyShape, BodySpec, DesignSpec, JointSpec, JointType
-from agentarium.core.schemas.setup import LaunchConfig, ScenarioConfig, WorldConfig
-from agentarium.services.preset_service import get_scenario_preset, get_world_template
+from agentgymnasium.agents.runner import _inject_challenge_goal, _seed_scaffold, _seed_world
+from agentgymnasium.core.schemas.design import BodyShape, BodySpec, DesignSpec, JointSpec, JointType
+from agentgymnasium.core.schemas.setup import LaunchConfig, ScenarioConfig, WorldConfig
+from agentgymnasium.services.preset_service import get_scenario_preset, get_world_template
 
 
 def _beam(id_: str, start: list[float], end: list[float]) -> BodySpec:

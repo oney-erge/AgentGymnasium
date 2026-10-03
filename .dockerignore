@@ -4,7 +4,7 @@
 .env
 .env.*
 frontend/node_modules
-backend/agentarium/static
+backend/agentgymnasium/static
 runs
 *.pyc
 __pycache__

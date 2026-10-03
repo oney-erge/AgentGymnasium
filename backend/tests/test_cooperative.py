@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import asyncio
 
-from agentarium.agents.runner import _remap_ids, run_cooperative_attempt
-from agentarium.core.schemas.setup import (
+from agentgymnasium.agents.runner import _remap_ids, run_cooperative_attempt
+from agentgymnasium.core.schemas.setup import (
     AgentConfig,
     AgentsConfig,
     CollaborationMode,
@@ -14,8 +14,8 @@ from agentarium.core.schemas.setup import (
     ToolsConfig,
     WorldConfig,
 )
-from agentarium.services import orchestrator
-from agentarium.services.orchestrator import RunManager
+from agentgymnasium.services import orchestrator
+from agentgymnasium.services.orchestrator import RunManager
 
 # Keep streaming instant in tests.
 orchestrator.STREAM_DELAY = 0.0

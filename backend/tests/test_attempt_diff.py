@@ -1,9 +1,9 @@
 """Attempt diff: structured comparison fed into the prompt and surfaced to Studio."""
 from __future__ import annotations
 
-from agentarium.agents.runner import AttemptResult, _attempt_diff, _build_memory
-from agentarium.core.schemas.design import BodyShape, BodySpec, DesignSpec
-from agentarium.core.schemas.score import ScoreCard
+from agentgymnasium.agents.runner import AttemptResult, _attempt_diff, _build_memory
+from agentgymnasium.core.schemas.design import BodyShape, BodySpec, DesignSpec
+from agentgymnasium.core.schemas.score import ScoreCard
 
 
 def _design(ids_positions: dict[str, list[float]]) -> DesignSpec:

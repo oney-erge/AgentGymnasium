@@ -18,7 +18,7 @@ frontend/.vite/
 # AgentGymnasium run artifacts
 runs/
 
-# NOTE: uv.lock and backend/agentarium/static/ (the built web UI) are
+# NOTE: uv.lock and backend/agentgymnasium/static/ (the built web UI) are
 # intentionally committed so the app installs deterministically and runs with
 # no Node/npm step — see run.sh / README. Rebuild the UI with
 # `cd frontend && npm run build` and commit the result.

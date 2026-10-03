@@ -1,10 +1,10 @@
 """Challenge pack: goal zones + meaningfully distinct rewards per challenge."""
 from __future__ import annotations
 
-from agentarium.core.schemas.design import BodyShape, BodySpec, DesignSpec
-from agentarium.core.schemas.trace import EpisodeTrace, Frame, FrameBody
-from agentarium.services.preset_service import get_scenario_preset
-from agentarium.services.scoring_service import REWARDS, compute_metrics, score_attempt
+from agentgymnasium.core.schemas.design import BodyShape, BodySpec, DesignSpec
+from agentgymnasium.core.schemas.trace import EpisodeTrace, Frame, FrameBody
+from agentgymnasium.services.preset_service import get_scenario_preset
+from agentgymnasium.services.scoring_service import REWARDS, compute_metrics, score_attempt
 
 
 def _trace_to(x_final: float) -> EpisodeTrace:
@@ -193,7 +193,7 @@ def test_city_rewards_spacing():
 
 def test_sorting_denominator_ignores_static_support(_unused=None):
     # Static support beams must NOT count as items to sort (H2 regression).
-    from agentarium.services.scoring_service import compute_metrics
+    from agentgymnasium.services.scoring_service import compute_metrics
 
     d = DesignSpec(
         name="t",

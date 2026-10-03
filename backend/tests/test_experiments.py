@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import asyncio
 
-from agentarium.core.schemas.experiment import (
+from agentgymnasium.core.schemas.experiment import (
     ExperimentSpec,
     ExperimentStatus,
     ModelVariant,
 )
-from agentarium.core.schemas.setup import (
+from agentgymnasium.core.schemas.setup import (
     AgentConfig,
     AgentsConfig,
     ConstraintsConfig,
@@ -17,8 +17,8 @@ from agentarium.core.schemas.setup import (
     ToolsConfig,
     WorldConfig,
 )
-from agentarium.services.experiment_service import ExperimentManager
-from agentarium.services.orchestrator import RunManager
+from agentgymnasium.services.experiment_service import ExperimentManager
+from agentgymnasium.services.orchestrator import RunManager
 
 
 def _base_config() -> LaunchConfig:

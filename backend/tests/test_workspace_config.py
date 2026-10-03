@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from agentarium.app import app
-from agentarium.services import workspace_config_service
+from agentgymnasium.app import app
+from agentgymnasium.services import workspace_config_service
 
 client = TestClient(app)
 

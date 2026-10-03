@@ -76,8 +76,8 @@ esac
 uv="$(find_uv || true)"
 if [ "$action" = doctor ]; then
   [ -n "$uv" ] || { echo "uv is missing. Run ./run.sh once." >&2; exit 1; }
-  "$uv" run --frozen --no-sync agentarium --help >/dev/null
-  [ -f backend/agentarium/static/index.html ] || { echo "The prebuilt UI is missing." >&2; exit 1; }
+  "$uv" run --frozen --no-sync agentgymnasium --help >/dev/null
+  [ -f backend/agentgymnasium/static/index.html ] || { echo "The prebuilt UI is missing." >&2; exit 1; }
   echo "AgentGymnasium native environment is ready."
   exit 0
 fi
@@ -89,12 +89,12 @@ sync_args=(sync --frozen --no-dev)
 [ "$action" = repair ] && sync_args+=(--reinstall)
 install_retry "dependency synchronization" "$uv" "${sync_args[@]}"
 
-if [ ! -f backend/agentarium/static/index.html ]; then
+if [ ! -f backend/agentgymnasium/static/index.html ]; then
   command -v npm >/dev/null 2>&1 || { echo "The prebuilt UI is missing and Node/npm is unavailable." >&2; exit 1; }
   (cd frontend && install_retry "frontend dependency installation" npm ci && npm run build)
 fi
 
 install_complete
-serve_args=(run --frozen --no-sync agentarium serve --no-reload)
+serve_args=(run --frozen --no-sync agentgymnasium serve --no-reload)
 [ "$no_browser" -eq 0 ] && serve_args+=(--open)
 exec "$uv" "${serve_args[@]}"

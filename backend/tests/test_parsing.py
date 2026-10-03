@@ -1,7 +1,7 @@
 """Shared tool-call parser handles the response shapes both providers emit."""
 from __future__ import annotations
 
-from agentarium.agents.parsing import parse_tool_calls
+from agentgymnasium.agents.parsing import parse_tool_calls
 
 
 def test_direct_object():

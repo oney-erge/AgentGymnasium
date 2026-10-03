@@ -29,7 +29,7 @@ speeds above the device limit, excessive durations, non-finite values, and
 actions while disarmed. Emergency stop remains callable without a token.
 
 For `real` and `hardware_in_the_loop` devices, arming and emergency-stop reset
-additionally require the `AGENTARIUM_OPERATOR_KEY`. If the variable is missing,
+additionally require the `AGENTGYMNASIUM_OPERATOR_KEY`. If the variable is missing,
 hardware-backed arming is disabled. Tokens and operator keys are never included
 in device/event reads or episode artifacts.
 
@@ -44,7 +44,7 @@ An armed device can run a bounded model episode from Physical Lab or:
 
 ```http
 POST /api/embodiments/{device_id}/episodes
-X-Agentarium-Control-Token: ...
+X-AgentGymnasium-Control-Token: ...
 ```
 
 The episode:
@@ -67,12 +67,12 @@ Episode artifacts are written to `runs/embodiment-episodes/`.
 Set:
 
 ```bash
-AGENTARIUM_ROS2_GATEWAY_URL=http://robot-gateway:8080
-AGENTARIUM_ROS2_GATEWAY_TOKEN=robot-side-secret
-AGENTARIUM_ROS2_DEVICE_ID=ros2-rover
-AGENTARIUM_ROS2_DEVICE_LABEL="Lab Rover"
-AGENTARIUM_ROS2_MODE=real
-AGENTARIUM_OPERATOR_KEY=human-arming-secret
+AGENTGYMNASIUM_ROS2_GATEWAY_URL=http://robot-gateway:8080
+AGENTGYMNASIUM_ROS2_GATEWAY_TOKEN=robot-side-secret
+AGENTGYMNASIUM_ROS2_DEVICE_ID=ros2-rover
+AGENTGYMNASIUM_ROS2_DEVICE_LABEL="Lab Rover"
+AGENTGYMNASIUM_ROS2_MODE=real
+AGENTGYMNASIUM_OPERATOR_KEY=human-arming-secret
 ```
 
 Only URL and gateway token are required for registration. The mode defaults to
@@ -87,7 +87,7 @@ The gateway contract is:
 | `POST` | `/v1/emergency-stop` | Immediately stop and latch robot-side motion. |
 | `POST` | `/v1/reset` | Logical reset for non-real/HIL fixtures only. |
 
-Requests carry `Authorization: Bearer <AGENTARIUM_ROS2_GATEWAY_TOKEN>`. The
+Requests carry `Authorization: Bearer <AGENTGYMNASIUM_ROS2_GATEWAY_TOKEN>`. The
 gateway should map the normalized messages to stable ROS 2 topics,
 services/actions, and `ros2_control` controllers. It must reject unsupported
 actions and apply its own limits before touching actuators.

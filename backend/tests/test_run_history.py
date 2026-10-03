@@ -3,10 +3,10 @@ from __future__ import annotations
 
 import pytest
 
-from agentarium.core.schemas.score import ScoreCard
-from agentarium.core.schemas.setup import WorldConfig
-from agentarium.services import run_service
-from agentarium.services.run_service import (
+from agentgymnasium.core.schemas.score import ScoreCard
+from agentgymnasium.core.schemas.setup import WorldConfig
+from agentgymnasium.services import run_service
+from agentgymnasium.services.run_service import (
     create_run_from_design,
     hardcoded_demo_design,
     leaderboard,
@@ -19,7 +19,7 @@ from agentarium.services.run_service import (
 @pytest.fixture()
 def _db(tmp_path, monkeypatch):
     monkeypatch.setattr(run_service, "_RUNS_DIR", tmp_path)
-    monkeypatch.setattr(run_service, "_DB_PATH", tmp_path / "agentarium.db")
+    monkeypatch.setattr(run_service, "_DB_PATH", tmp_path / "agentgymnasium.db")
     run_service._init_db()
     return tmp_path
 
@@ -119,7 +119,7 @@ def test_history_survives_simulated_restart(_db):
 def test_history_and_leaderboard_endpoints_respond():
     from fastapi.testclient import TestClient
 
-    from agentarium.app import app
+    from agentgymnasium.app import app
 
     client = TestClient(app)
     r1 = client.get("/api/runs/history?limit=5")
@@ -143,7 +143,7 @@ def test_run_meta_pruned_with_runs_no_dead_links(_db, monkeypatch):
 
 
 def test_leaderboard_excludes_null_challenge_runs(_db):
-    from agentarium.core.schemas.setup import WorldConfig
+    from agentgymnasium.core.schemas.setup import WorldConfig
 
     # A demo run via create_run_from_design has no challenge (null).
     world = WorldConfig(template="flat_arena", engine="pymunk2d")
