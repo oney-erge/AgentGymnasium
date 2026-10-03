@@ -1,7 +1,7 @@
-# Agentarium — UX Overhaul Plan (for the LLM / robotics researcher)
+# AgentGymnasium — UX Overhaul Plan (for the LLM / robotics researcher)
 
 **Status:** proposed (2026-07-08). Not yet started.
-**Goal:** turn Agentarium from a "configure-once, launch-once, watch-once" demo into a
+**Goal:** turn AgentGymnasium from a "configure-once, launch-once, watch-once" demo into a
 **reproducible experimentation loop** for someone probing how well LLMs reason about the
 physical world. Read this alongside `docs/COMPREHENSIVE_PLAN.md` (original spec) and
 `docs/remaining_gaps.md` (deferred items). This plan supersedes none of the architecture

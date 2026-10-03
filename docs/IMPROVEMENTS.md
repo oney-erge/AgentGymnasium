@@ -1,4 +1,4 @@
-# Agentarium — Improvements & Forward Roadmap
+# AgentGymnasium — Improvements & Forward Roadmap
 
 Living document for larger improvements and the findings of the post-MVP repo
 review. Day-to-day deferred items live in [`remaining_gaps.md`](remaining_gaps.md);
@@ -234,7 +234,7 @@ onboarding robustness, and a few backend correctness nits.
 | Setup | Tools auto-seed race fixed: checked tools derive from `config.tools.enabled` (single source), mount seed unions, preset selection merges `required_tools`. |
 | Studio | Viewport overlay for loading / error / disconnected (was a blank black canvas). |
 | Studio | WS drop → distinct `disconnected` status ("Connection lost"), not a fake "Finished". |
-| Studio | ChallengeBriefing shows real reward + constraints (new `run_started` payload); unified project-name fallback; tab title `frontend`→`Agentarium`. |
+| Studio | ChallengeBriefing shows real reward + constraints (new `run_started` payload); unified project-name fallback; tab title `frontend`→`AgentGymnasium`. |
 | Onboarding | `serve` defaults to no-reload; friendly port-in-use message; browser opens only after `/api/health` is ready; `run.sh`/`run.ps1` re-check `uv` after install. |
 | Backend | `max_motors` enforced; stability `0.0` on <2 frames; engine always records the final frame; SQLite `scores`/`designs` pruned with `runs`; `save_preset` name sanitized (path-traversal); cooperative prompt instructs exact-id references. |
 

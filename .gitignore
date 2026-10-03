@@ -15,7 +15,7 @@ frontend/node_modules/
 frontend/dist/
 frontend/.vite/
 
-# Agentarium run artifacts
+# AgentGymnasium run artifacts
 runs/
 
 # NOTE: uv.lock and backend/agentarium/static/ (the built web UI) are

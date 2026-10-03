@@ -17,7 +17,7 @@ class ROS2GatewayAdapter(EmbodimentAdapter):
 
     The gateway is expected to translate these high-level messages into ROS 2
     interfaces and independently enforce a hardware watchdog and actuator
-    limits. Agentarium deliberately has no direct ROS or motor dependency.
+    limits. AgentGymnasium deliberately has no direct ROS or motor dependency.
     """
 
     adapter_name = "ros2_gateway"

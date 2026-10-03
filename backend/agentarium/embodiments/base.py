@@ -10,7 +10,7 @@ from agentarium.core.schemas.embodiment import (
 
 
 class EmbodimentAdapter(ABC):
-    """Narrow high-level boundary between Agentarium and an embodied system.
+    """Narrow high-level boundary between AgentGymnasium and an embodied system.
 
     Adapters intentionally do not expose raw motor/PWM commands. A robot-side
     controller remains responsible for its own low-level control and watchdog.

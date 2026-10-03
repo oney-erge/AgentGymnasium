@@ -1,14 +1,14 @@
 <div align="center">
 
-# Agentarium
+# AgentGymnasium
 
 **A visual physics sandbox where LLM agents build bridges, creatures, and machines, watch the replay, and try again.**
 
-[![CI](https://github.com/oney-erge/Agentarium/actions/workflows/ci.yml/badge.svg)](https://github.com/oney-erge/Agentarium/actions/workflows/ci.yml)
+[![CI](https://github.com/oney-erge/AgentGymnasium/actions/workflows/ci.yml/badge.svg)](https://github.com/oney-erge/AgentGymnasium/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 
-![Agentarium Studio replaying a Bridge Builder run: a crate rolls down a ramp and across a bridge to the goal flag while the tool-call log, score card, and design summary update](docs/assets/demo.gif)
+![AgentGymnasium Studio replaying a Bridge Builder run: a crate rolls down a ramp and across a bridge to the goal flag while the tool-call log, score card, and design summary update](docs/assets/demo.gif)
 
 <sub>Studio replaying the built-in offline demo run. The `mock` provider issues scripted tool calls, so this needs no API key and no model.</sub>
 
@@ -26,23 +26,23 @@ Setup → tools → design → simulation → replay → score → next attempt
 ## Quick start
 
 ```bash
-git clone https://github.com/oney-erge/Agentarium.git
-cd Agentarium
+git clone https://github.com/oney-erge/AgentGymnasium.git
+cd AgentGymnasium
 ./run.sh            # Linux. macOS: ./run.command   Windows: .\run.bat
 ```
 
 The launcher installs [`uv`](https://docs.astral.sh/uv/) if needed (which
-manages Python for you), installs dependencies, and opens Agentarium at
+manages Python for you), installs dependencies, and opens AgentGymnasium at
 **http://localhost:8765**. A prebuilt web UI ships with the repo, so **Node is
 not required**. The first run downloads dependencies and takes a minute or two;
 after that it starts in seconds. Press `Ctrl+C` to stop.
 
 No API key is needed to look around: the offline `mock` provider runs the whole
-loop with scripted tool calls. To let a real model drive, point Agentarium at
+loop with scripted tool calls. To let a real model drive, point AgentGymnasium at
 [LocalDeploy](https://github.com/oney-erge/LocalDeploy) or any OpenAI-compatible
 endpoint (see [OpenAI API key](#openai-api-key)).
 
-## Why Agentarium
+## Why AgentGymnasium
 
 - **Agents act only through validated tools.** 24 explicit tools, and every
   design mutation goes through one chokepoint, so a bad tool call cannot crash
@@ -59,9 +59,6 @@ endpoint (see [OpenAI API key](#openai-api-key)).
   observation/action boundary against a mock rover or a ROS 2 gateway. It is not
   a certified safety controller.
 
-*Not to be confused with [Thytu/Agentarium](https://github.com/Thytu/Agentarium),
-a different project: a Python framework for simulations populated by AI agents.*
-
 <details>
 <summary>Launcher details and the manual route</summary>
 
@@ -73,6 +70,9 @@ use `.\run.ps1` to stay in PowerShell.
 Setup checks disk space, serializes concurrent installs, and retries temporary
 network failures up to three times. If it cannot finish, see
 `.setup/install.log` for the persistent failure record.
+
+The project was renamed from Agentarium to AgentGymnasium. The Python package, the `agentarium`
+command, and the `AGENTARIUM_*` environment variables keep their original names for now.
 
 To run things yourself:
 
@@ -175,7 +175,7 @@ runs, so their replays open in Studio.
 ### Physical / ROS 2 gateway
 
 Physical Lab always includes an offline mock rover. A real robot-side gateway
-can be registered without adding ROS dependencies to the Agentarium server:
+can be registered without adding ROS dependencies to the AgentGymnasium server:
 
 ```bash
 AGENTARIUM_ROS2_GATEWAY_URL=http://robot-gateway:8080
@@ -184,10 +184,10 @@ AGENTARIUM_OPERATOR_KEY=human-arming-secret
 uv run agentarium serve
 ```
 
-Real-device arming also requires the operator key in the UI. Agentarium only
+Real-device arming also requires the operator key in the UI. AgentGymnasium only
 sends bounded `drive_to` and `stop` actions; the robot-side gateway must enforce
 its own local watchdog, actuator limits, collision avoidance, and physical
-emergency stop. **Agentarium is not a certified safety controller.** See
+emergency stop. **AgentGymnasium is not a certified safety controller.** See
 [`docs/EMBODIMENT.md`](docs/EMBODIMENT.md).
 
 ### OpenAI API key

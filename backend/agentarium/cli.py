@@ -16,7 +16,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="agentarium")
     sub = parser.add_subparsers(dest="command")
 
-    serve = sub.add_parser("serve", help="Start the Agentarium server")
+    serve = sub.add_parser("serve", help="Start the AgentGymnasium server")
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8765)
     # Reload is OFF by default: the file-watcher can tear down live runs when
@@ -135,7 +135,7 @@ def main(argv: list[str] | None = None) -> None:
 
         if _port_in_use(host, port):
             print(
-                f"\n  Port {port} is already in use — is Agentarium already running?\n"
+                f"\n  Port {port} is already in use — is AgentGymnasium already running?\n"
                 f"  Open http://localhost:{port} in your browser, or stop the other\n"
                 f"  process and try again (or pass a different --port).\n",
                 file=sys.stderr,
@@ -152,14 +152,14 @@ def main(argv: list[str] | None = None) -> None:
         try:
             result = asyncio.run(_headless_run(args.config, args.seed))
         except Exception as exc:  # noqa: BLE001 - CLI boundary
-            print(f"Agentarium run failed: {exc}", file=sys.stderr)
+            print(f"AgentGymnasium run failed: {exc}", file=sys.stderr)
             raise SystemExit(1) from exc
         print(json.dumps(result, indent=2))
     elif args.command == "sweep":
         try:
             result = asyncio.run(_headless_sweep(args.matrix))
         except Exception as exc:  # noqa: BLE001 - CLI boundary
-            print(f"Agentarium sweep failed: {exc}", file=sys.stderr)
+            print(f"AgentGymnasium sweep failed: {exc}", file=sys.stderr)
             raise SystemExit(1) from exc
         print(json.dumps(result, indent=2))
     else:

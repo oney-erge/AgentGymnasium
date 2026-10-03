@@ -1,4 +1,4 @@
-# Agentarium — Challenge Overhaul & Self‑Eval Plan
+# AgentGymnasium — Challenge Overhaul & Self‑Eval Plan
 
 **Status: all phases below (1–6) implemented and merged to this branch.** See
 `docs/remaining_gaps.md` (E6–E11) for the itemized fixes and what's still deferred

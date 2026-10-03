@@ -2,12 +2,12 @@
 
 @AGENTS.md
 
-Guidance for Claude (and subagents) working in the Agentarium repository. Read this at
+Guidance for Claude (and subagents) working in the AgentGymnasium repository. Read this at
 the start of every session and follow it.
 
 ## What this is
 
-Agentarium is a visual AI physics sandbox: LLM agents pick explicit tools to build
+AgentGymnasium is a visual AI physics sandbox: LLM agents pick explicit tools to build
 designs in an isometric world, the backend simulates with Pymunk2D, and the Studio
 replays scored attempts. Plan and progress live in `docs/COMPREHENSIVE_PLAN.md` (master
 plan + UI spec) and `docs/IMPLEMENTATION_STEPS.md` (numbered Step 1–27 build guide).
@@ -23,7 +23,7 @@ read them before picking up new work:
 Keep both current: when you finish a deferred item or find a new bug/gap, update the
 matching table in the same change rather than letting these drift.
 
-## Commands (run from repo root `/home/user/Agentarium`)
+## Commands (run from repo root `/home/user/AgentGymnasium`)
 
 - Install: `uv sync --all-groups`
 - One-command launch (end users): `./run.sh` (macOS/Linux) or `./run.ps1` (Windows) —

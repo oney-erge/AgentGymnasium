@@ -16,7 +16,7 @@ from agentarium.api.routes_setup import router as setup_router
 from agentarium.api.routes_tools import router as tools_router
 from agentarium.api.routes_ws import router as ws_router
 
-app = FastAPI(title="Agentarium", version=__version__)
+app = FastAPI(title="AgentGymnasium", version=__version__)
 
 app.include_router(setup_router)
 app.include_router(tools_router)

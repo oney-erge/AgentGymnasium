@@ -1,4 +1,4 @@
-# Agentarium frontend
+# AgentGymnasium frontend
 
 React + Vite client for the Setup and Studio screens. Most users do not need to
 run this directly because `backend/agentarium/static/` contains the committed

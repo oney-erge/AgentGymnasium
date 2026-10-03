@@ -8,7 +8,7 @@ under `docs/archive/`; shipped details are in `IMPROVEMENTS.md`.
 
 | Priority | Gap | What “done” means |
 | --- | --- | --- |
-| High | The ROS 2 side is a documented HTTP contract and Agentarium adapter, not a reference ROS 2 package. | Ship a small gateway package with message/action definitions, `ros2_control` integration, a robot-local watchdog, launch files, and a fake-hardware CI fixture. |
+| High | The ROS 2 side is a documented HTTP contract and AgentGymnasium adapter, not a reference ROS 2 package. | Ship a small gateway package with message/action definitions, `ros2_control` integration, a robot-local watchdog, launch files, and a fake-hardware CI fixture. |
 | High | Host-side safety is not a certified hardware safety system. | Hardware risk assessment, work-cell interlocks, physical E-stop validation, robot-local limits, authenticated/TLS network boundary, operator roles, and deployment-specific acceptance tests. |
 | High | Physical comparisons cannot guarantee identical starting state. | A task fixture with fiducials/pose reset, calibration record, environment version, operator checklist, and paired-trial randomization. Never silently “reset” a real robot in software. |
 | Medium | Embodiment session events are in memory; episode results are JSON files. | Durable append-only audit rows with operator/device/task ids, clock synchronization, calibration hash, checksums, and export tooling. |

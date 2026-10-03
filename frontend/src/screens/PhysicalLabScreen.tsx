@@ -238,7 +238,7 @@ export function PhysicalLabScreen() {
           <div style={{ ...panel(), borderColor: 'var(--warn)' }}>
             <strong style={{ color: 'var(--warn)' }}>Experimental embodiment boundary</strong>
             <span style={muted()}>
-              Agentarium only sends bounded, high-level actions. Real hardware must independently
+              AgentGymnasium only sends bounded, high-level actions. Real hardware must independently
               enforce a robot-side watchdog, actuator limits, collision avoidance, and a physical
               emergency stop. This software is not a certified safety controller.
             </span>

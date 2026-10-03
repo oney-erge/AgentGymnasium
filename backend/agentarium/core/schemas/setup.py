@@ -172,7 +172,7 @@ class OutputsConfig(BaseModel):
 
 class LaunchConfig(BaseModel):
     version: int = 1
-    project_name: str = "Agentarium Run"
+    project_name: str = "AgentGymnasium Run"
     scenario: ScenarioConfig
     world: WorldConfig
     agents: AgentsConfig = AgentsConfig()
