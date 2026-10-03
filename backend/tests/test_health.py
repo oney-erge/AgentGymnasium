@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from agentarium.app import app
+from agentgymnasium.app import app
 
 client = TestClient(app)
 

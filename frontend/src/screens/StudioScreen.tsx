@@ -1055,7 +1055,7 @@ function ViewportOverlay({
             borderRadius: '50%',
             border: '3px solid var(--border)',
             borderTopColor: 'var(--accent)',
-            animation: 'agentarium-spin 0.8s linear infinite',
+            animation: 'agentgymnasium-spin 0.8s linear infinite',
           }}
         />
       )}

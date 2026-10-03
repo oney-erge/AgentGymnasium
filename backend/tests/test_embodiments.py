@@ -4,9 +4,9 @@ import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
-from agentarium.api.routes_embodiments import _authorize_real_device
-from agentarium.app import app
-from agentarium.core.schemas.embodiment import (
+from agentgymnasium.api.routes_embodiments import _authorize_real_device
+from agentgymnasium.app import app
+from agentgymnasium.core.schemas.embodiment import (
     ActionKind,
     EmbodimentAction,
     EmbodimentDevice,
@@ -14,8 +14,8 @@ from agentarium.core.schemas.embodiment import (
     SafetyLimits,
     SafetyState,
 )
-from agentarium.embodiments.mock import MockRoverAdapter
-from agentarium.embodiments.safety import SafetySupervisor, SafetyViolation
+from agentgymnasium.embodiments.mock import MockRoverAdapter
+from agentgymnasium.embodiments.safety import SafetySupervisor, SafetyViolation
 
 client = TestClient(app)
 
@@ -105,7 +105,7 @@ def test_embodiment_api_control_flow():
     )
     assert armed.status_code == 200
     token = armed.json()["control_token"]
-    headers = {"X-Agentarium-Control-Token": token}
+    headers = {"X-AgentGymnasium-Control-Token": token}
 
     moved = client.post(
         f"/api/embodiments/{device_id}/actions",
@@ -154,7 +154,7 @@ def test_mock_llm_runs_a_scored_embodied_episode():
         json={"confirmation": f"ARM {device_id}"},
     )
     token = armed.json()["control_token"]
-    headers = {"X-Agentarium-Control-Token": token}
+    headers = {"X-AgentGymnasium-Control-Token": token}
 
     response = client.post(
         f"/api/embodiments/{device_id}/episodes",
@@ -196,7 +196,7 @@ def test_real_device_arming_requires_operator_key(monkeypatch):
         safety_state=SafetyState.disarmed,
         limits=SafetyLimits(),
     )
-    monkeypatch.setenv("AGENTARIUM_OPERATOR_KEY", "operator-secret")
+    monkeypatch.setenv("AGENTGYMNASIUM_OPERATOR_KEY", "operator-secret")
     with pytest.raises(HTTPException) as denied:
         _authorize_real_device(device, "wrong")
     assert denied.value.status_code == 403

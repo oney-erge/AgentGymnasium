@@ -338,12 +338,12 @@ export function SetupScreen() {
     })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
-    const project = (config.project_name || config.scenario?.preset || 'agentarium')
+    const project = (config.project_name || config.scenario?.preset || 'agentgymnasium')
       .toLowerCase()
       .replace(/[^a-z0-9._-]+/g, '-')
       .replace(/^-+|-+$/g, '')
     a.href = url
-    a.download = `${project || 'agentarium'}-launch-config.json`
+    a.download = `${project || 'agentgymnasium'}-launch-config.json`
     document.body.appendChild(a)
     a.click()
     a.remove()

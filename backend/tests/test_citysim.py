@@ -3,9 +3,9 @@ and the end-to-end mock pipeline for the new isometric city challenges."""
 
 import asyncio
 
-from agentarium.agents.runner import run_single_attempt
-from agentarium.core.schemas.design import BodyShape, BodySpec, DesignSpec
-from agentarium.core.schemas.setup import (
+from agentgymnasium.agents.runner import run_single_attempt
+from agentgymnasium.core.schemas.design import BodyShape, BodySpec, DesignSpec
+from agentgymnasium.core.schemas.setup import (
     AgentConfig,
     AgentsConfig,
     LaunchConfig,
@@ -14,12 +14,12 @@ from agentarium.core.schemas.setup import (
     ToolsConfig,
     WorldConfig,
 )
-from agentarium.engines import get_engine
-from agentarium.engines.citysim import layout
-from agentarium.engines.citysim.engine import CityEngine
-from agentarium.services.preset_service import get_scenario_preset, get_world_template
-from agentarium.services.run_service import get_trace
-from agentarium.services.scoring_service import REWARDS, compute_city_metrics, score_attempt
+from agentgymnasium.engines import get_engine
+from agentgymnasium.engines.citysim import layout
+from agentgymnasium.engines.citysim.engine import CityEngine
+from agentgymnasium.services.preset_service import get_scenario_preset, get_world_template
+from agentgymnasium.services.run_service import get_trace
+from agentgymnasium.services.scoring_service import REWARDS, compute_city_metrics, score_attempt
 
 
 def _world() -> WorldConfig:

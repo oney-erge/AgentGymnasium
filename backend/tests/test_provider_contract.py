@@ -12,8 +12,8 @@ import json
 import httpx
 import pytest
 
-from agentarium.agents.openai_compatible import LLMError, OpenAICompatibleProvider
-from agentarium.core.schemas.model import ModelRequest
+from agentgymnasium.agents.openai_compatible import LLMError, OpenAICompatibleProvider
+from agentgymnasium.core.schemas.model import ModelRequest
 
 _EP = "http://llm.test/v1"
 
@@ -105,8 +105,8 @@ def test_empty_content_raises_empty():
 
 
 def test_server_error_retries_then_fails(monkeypatch):
-    monkeypatch.setenv("AGENTARIUM_LLM_RETRIES", "2")
-    monkeypatch.setenv("AGENTARIUM_LLM_BACKOFF_S", "0")  # no real sleeping
+    monkeypatch.setenv("AGENTGYMNASIUM_LLM_RETRIES", "2")
+    monkeypatch.setenv("AGENTGYMNASIUM_LLM_BACKOFF_S", "0")  # no real sleeping
     calls = {"n": 0}
 
     def handler(_req: httpx.Request) -> httpx.Response:
@@ -120,8 +120,8 @@ def test_server_error_retries_then_fails(monkeypatch):
 
 
 def test_server_error_then_success_recovers(monkeypatch):
-    monkeypatch.setenv("AGENTARIUM_LLM_RETRIES", "2")
-    monkeypatch.setenv("AGENTARIUM_LLM_BACKOFF_S", "0")
+    monkeypatch.setenv("AGENTGYMNASIUM_LLM_RETRIES", "2")
+    monkeypatch.setenv("AGENTGYMNASIUM_LLM_BACKOFF_S", "0")
     calls = {"n": 0}
 
     def handler(_req: httpx.Request) -> httpx.Response:
@@ -136,8 +136,8 @@ def test_server_error_then_success_recovers(monkeypatch):
 
 
 def test_timeout_retries_then_raises_timeout(monkeypatch):
-    monkeypatch.setenv("AGENTARIUM_LLM_RETRIES", "1")
-    monkeypatch.setenv("AGENTARIUM_LLM_BACKOFF_S", "0")
+    monkeypatch.setenv("AGENTGYMNASIUM_LLM_RETRIES", "1")
+    monkeypatch.setenv("AGENTGYMNASIUM_LLM_BACKOFF_S", "0")
     calls = {"n": 0}
 
     def handler(req: httpx.Request) -> httpx.Response:
@@ -151,8 +151,8 @@ def test_timeout_retries_then_raises_timeout(monkeypatch):
 
 
 def test_rate_limit_retries_then_fails(monkeypatch):
-    monkeypatch.setenv("AGENTARIUM_LLM_RETRIES", "2")
-    monkeypatch.setenv("AGENTARIUM_LLM_BACKOFF_S", "0")
+    monkeypatch.setenv("AGENTGYMNASIUM_LLM_RETRIES", "2")
+    monkeypatch.setenv("AGENTGYMNASIUM_LLM_BACKOFF_S", "0")
     calls = {"n": 0}
 
     def handler(_req: httpx.Request) -> httpx.Response:
@@ -166,8 +166,8 @@ def test_rate_limit_retries_then_fails(monkeypatch):
 
 
 def test_auth_does_not_retry(monkeypatch):
-    monkeypatch.setenv("AGENTARIUM_LLM_RETRIES", "3")
-    monkeypatch.setenv("AGENTARIUM_LLM_BACKOFF_S", "0")
+    monkeypatch.setenv("AGENTGYMNASIUM_LLM_RETRIES", "3")
+    monkeypatch.setenv("AGENTGYMNASIUM_LLM_BACKOFF_S", "0")
     calls = {"n": 0}
 
     def handler(_req: httpx.Request) -> httpx.Response:

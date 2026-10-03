@@ -11,7 +11,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: '../backend/agentarium/static',
+    outDir: '../backend/agentgymnasium/static',
     emptyOutDir: true,
   },
 })

@@ -7,8 +7,8 @@ design unchanged.
 
 from __future__ import annotations
 
-from agentarium.core.schemas.design import DesignSpec
-from agentarium.tools.apply import apply_tool_call
+from agentgymnasium.core.schemas.design import DesignSpec
+from agentgymnasium.tools.apply import apply_tool_call
 
 _BUILD_TOOLS = ["create_body", "add_ball", "set_friction"]
 

@@ -13,7 +13,7 @@ ui:
 	cd frontend && npm install && npm run build
 
 serve:
-	uv run agentarium serve --open
+	uv run agentgymnasium serve --open
 
 test:
 	uv run pytest

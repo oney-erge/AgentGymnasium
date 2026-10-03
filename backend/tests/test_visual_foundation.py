@@ -1,13 +1,13 @@
 """Visual foundation: semantic kind end-to-end (design -> trace -> summary)."""
 from __future__ import annotations
 
-from agentarium.agents.prompts import build_system_prompt
-from agentarium.core.schemas.design import BodyShape, BodySpec, DesignSpec, JointSpec
-from agentarium.core.schemas.setup import WorldConfig
-from agentarium.engines.pymunk2d.engine import Pymunk2DEngine
-from agentarium.services.orchestrator import _design_summary
-from agentarium.tools.apply import apply_tool_call
-from agentarium.tools.registry import get_tool
+from agentgymnasium.agents.prompts import build_system_prompt
+from agentgymnasium.core.schemas.design import BodyShape, BodySpec, DesignSpec, JointSpec
+from agentgymnasium.core.schemas.setup import WorldConfig
+from agentgymnasium.engines.pymunk2d.engine import Pymunk2DEngine
+from agentgymnasium.services.orchestrator import _design_summary
+from agentgymnasium.tools.apply import apply_tool_call
+from agentgymnasium.tools.registry import get_tool
 
 _BUILD = ["create_body", "add_beam", "add_ramp", "add_ball", "add_bin"]
 
@@ -115,7 +115,7 @@ def test_trace_carries_theme_material_seed_and_joint_metadata():
 
 
 def test_old_trace_payload_gets_backwards_compatible_visual_defaults():
-    from agentarium.core.schemas.trace import EpisodeTrace
+    from agentgymnasium.core.schemas.trace import EpisodeTrace
 
     trace = EpisodeTrace.model_validate(
         {

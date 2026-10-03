@@ -96,8 +96,8 @@ jobs:
       - name: Capture visual screenshots
         run: uv run pytest backend/tests/test_visual_playwright.py
         env:
-          AGENTARIUM_VISUAL_TESTS: "1"
-          AGENTARIUM_VISUAL_ARTIFACT_DIR: visual-artifacts
+          AGENTGYMNASIUM_VISUAL_TESTS: "1"
+          AGENTGYMNASIUM_VISUAL_ARTIFACT_DIR: visual-artifacts
 
       - name: Upload screenshots
         if: always()

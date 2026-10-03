@@ -87,7 +87,7 @@ export function TopBar({ projectName = 'AgentGymnasium', status = 'connecting' }
           Visuals
         </Link>
         <a
-          href="https://github.com/oney-erge/agentarium#readme"
+          href="https://github.com/oney-erge/agentgymnasium#readme"
           target="_blank"
           rel="noopener noreferrer"
           style={{ color: 'var(--text-2)', fontSize: 12, textDecoration: 'none' }}

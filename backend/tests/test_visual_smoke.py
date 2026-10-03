@@ -14,21 +14,22 @@ Skipped by default — spins up a live server + a Chromium browser (needs
 ``uv run python -m playwright install chromium``), which is slower and less
 hermetic than the rest of the suite. Run explicitly with:
 
-    AGENTARIUM_RUN_UI_SMOKE=1 uv run pytest backend/tests/test_visual_smoke.py
+    AGENTGYMNASIUM_RUN_UI_SMOKE=1 uv run pytest backend/tests/test_visual_smoke.py
 """
 from __future__ import annotations
 
 import asyncio
-import os
 import threading
 import time
 
 import pytest
 import uvicorn
 
+from agentgymnasium.core.env import env
+
 pytestmark = pytest.mark.skipif(
-    not os.environ.get("AGENTARIUM_RUN_UI_SMOKE"),
-    reason="opt-in: set AGENTARIUM_RUN_UI_SMOKE=1 (needs `playwright install chromium`)",
+    not env("RUN_UI_SMOKE"),
+    reason="opt-in: set AGENTGYMNASIUM_RUN_UI_SMOKE=1 (needs `playwright install chromium`)",
 )
 
 _CHALLENGES = [
@@ -43,7 +44,7 @@ _CHALLENGES = [
 def live_server():
     """Run the real FastAPI app on an ephemeral port, in-process (same module-
     level run storage as the test below), for the duration of this module."""
-    from agentarium.app import app
+    from agentgymnasium.app import app
 
     config = uvicorn.Config(app, host="127.0.0.1", port=0, log_level="error")
     server = uvicorn.Server(config)
@@ -66,8 +67,8 @@ def live_server():
 
 @pytest.mark.parametrize("preset,world,tools", _CHALLENGES)
 def test_scenario_canvas_renders(live_server: str, preset: str, world: str, tools: list[str]) -> None:
-    from agentarium.agents.runner import run_single_attempt
-    from agentarium.core.schemas.setup import (
+    from agentgymnasium.agents.runner import run_single_attempt
+    from agentgymnasium.core.schemas.setup import (
         AgentConfig,
         AgentsConfig,
         LaunchConfig,

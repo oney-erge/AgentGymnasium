@@ -1,7 +1,7 @@
 """Opt-in browser screenshots for the Setup and Studio surfaces.
 
 Normal pytest runs skip this module. CI enables it with
-AGENTARIUM_VISUAL_TESTS=1 and uploads the generated PNGs as artifacts.
+AGENTGYMNASIUM_VISUAL_TESTS=1 and uploads the generated PNGs as artifacts.
 """
 from __future__ import annotations
 
@@ -17,6 +17,7 @@ import urllib.request
 import pytest
 from playwright.sync_api import Page, expect, sync_playwright
 
+from agentgymnasium.core.env import env
 from tests.goldens import (
     bridge_builder_golden,
     city_builder_golden,
@@ -26,8 +27,8 @@ from tests.goldens import (
 )
 
 pytestmark = pytest.mark.skipif(
-    os.environ.get("AGENTARIUM_VISUAL_TESTS") != "1",
-    reason="set AGENTARIUM_VISUAL_TESTS=1 to run browser visual checks",
+    env("VISUAL_TESTS") != "1",
+    reason="set AGENTGYMNASIUM_VISUAL_TESTS=1 to run browser visual checks",
 )
 
 PREVIEW_IMAGES = {
@@ -47,7 +48,7 @@ def _free_port() -> int:
 
 @pytest.fixture(scope="module")
 def artifact_dir() -> pathlib.Path:
-    path = pathlib.Path(os.environ.get("AGENTARIUM_VISUAL_ARTIFACT_DIR", "visual-artifacts"))
+    path = pathlib.Path(env("VISUAL_ARTIFACT_DIR", "visual-artifacts"))
     path.mkdir(parents=True, exist_ok=True)
     return path
 
@@ -64,7 +65,7 @@ def live_server() -> str:
             sys.executable,
             "-m",
             "uvicorn",
-            "agentarium.app:app",
+            "agentgymnasium.app:app",
             "--host",
             "127.0.0.1",
             "--port",

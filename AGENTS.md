@@ -1,7 +1,7 @@
 # AgentGymnasium Repository Instructions
 
 AgentGymnasium is a visual AI physics sandbox. The Python backend and simulation
-code live under `src/agentarium/`; the browser interface lives under
+code live under `src/agentgymnasium/`; the browser interface lives under
 `frontend/`; tests live under `tests/`. Preserve the typed tool boundary,
 deterministic simulation paths, replay evidence, safety limits, and durable run
 history.

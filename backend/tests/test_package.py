@@ -1,5 +1,5 @@
-import agentarium
+import agentgymnasium
 
 
 def test_package_importable():
-    assert agentarium.__version__ == "0.1.0"
+    assert agentgymnasium.__version__ == "0.1.0"

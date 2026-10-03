@@ -1,6 +1,6 @@
-from agentarium.core.schemas.design import BodyShape, BodySpec, DesignSpec
-from agentarium.core.schemas.toolcall import ToolCallStatus
-from agentarium.tools.apply import apply_tool_call
+from agentgymnasium.core.schemas.design import BodyShape, BodySpec, DesignSpec
+from agentgymnasium.core.schemas.toolcall import ToolCallStatus
+from agentgymnasium.tools.apply import apply_tool_call
 
 _ENABLED = [
     "create_body",

@@ -1,11 +1,11 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from agentarium.app import app
-from agentarium.core.schemas.design import BodyShape, BodySpec, DesignSpec
-from agentarium.core.schemas.score import ScoreCard
-from agentarium.core.schemas.trace import EpisodeTrace, Frame, FrameBody
-from agentarium.services.scoring_service import (
+from agentgymnasium.app import app
+from agentgymnasium.core.schemas.design import BodyShape, BodySpec, DesignSpec
+from agentgymnasium.core.schemas.score import ScoreCard
+from agentgymnasium.core.schemas.trace import EpisodeTrace, Frame, FrameBody
+from agentgymnasium.services.scoring_service import (
     REWARDS,
     compute_metrics,
     score_attempt,
@@ -181,7 +181,7 @@ def _sorter_design_in_bin():
 
 
 def _sorter_trace_ball_in_bin():
-    from agentarium.core.schemas.trace import EpisodeTrace, Frame, FrameBody
+    from agentgymnasium.core.schemas.trace import EpisodeTrace, Frame, FrameBody
 
     return EpisodeTrace(
         run_id="r",

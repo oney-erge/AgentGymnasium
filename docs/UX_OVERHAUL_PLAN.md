@@ -64,7 +64,7 @@ launched. Today it doesn't.
 
 - **Persist the full resolved `LaunchConfig` with every run**, plus provenance: model id,
   provider, `temperature`, `world.seed`, prompt-template identifier, engine, app version /
-  git sha, and timestamp. Store it in the existing SQLite (`runs/agentarium.db`) next to
+  git sha, and timestamp. Store it in the existing SQLite (`runs/agentgymnasium.db`) next to
   the run record and in the run's artifact dir as `config.json`.
 - **New endpoints:**
   - `GET /runs/{id}/config` → the stored `LaunchConfig`.
@@ -147,8 +147,8 @@ What a *model* tester needs beyond physics: see the model's actual behavior.
 
 - **"Reproduce this run"** copy-buttons on every run: the exact `curl`, a `LaunchConfig`
   JSON, and a Python snippet hitting `POST /setup/launch`.
-- **Headless CLI**: `agentarium run --config cfg.json --seeds 42,1337,2024` and
-  `agentarium sweep --matrix matrix.yaml`, writing the same artifacts the UI produces, so
+- **Headless CLI**: `agentgymnasium run --config cfg.json --seeds 42,1337,2024` and
+  `agentgymnasium sweep --matrix matrix.yaml`, writing the same artifacts the UI produces, so
   experiments can live in a script / CI without opening a browser.
 
 ---

@@ -1,11 +1,11 @@
 import math
 
-from agentarium.core.schemas.design import BodyShape, BodySpec, DesignSpec, JointSpec, JointType
-from agentarium.core.schemas.setup import WorldConfig
-from agentarium.engines import get_engine
-from agentarium.engines.pymunk2d.builder import valid_ground_spans
-from agentarium.engines.pymunk2d.engine import Pymunk2DEngine
-from agentarium.services.run_service import hardcoded_demo_design
+from agentgymnasium.core.schemas.design import BodyShape, BodySpec, DesignSpec, JointSpec, JointType
+from agentgymnasium.core.schemas.setup import WorldConfig
+from agentgymnasium.engines import get_engine
+from agentgymnasium.engines.pymunk2d.builder import valid_ground_spans
+from agentgymnasium.engines.pymunk2d.engine import Pymunk2DEngine
+from agentgymnasium.services.run_service import hardcoded_demo_design
 
 
 def _world() -> WorldConfig:
@@ -122,7 +122,7 @@ def test_body_spawned_at_ground_default_does_not_tunnel_through():
     # Regression for E5: a dynamic body created via apply_tool_call with no
     # explicit position (schema default [0, 0]) must rest near the ground after
     # simulating, not fall through it forever (previously observed y -> -4412).
-    from agentarium.tools.apply import apply_tool_call
+    from agentgymnasium.tools.apply import apply_tool_call
 
     design = DesignSpec(name="t")
     apply_tool_call(

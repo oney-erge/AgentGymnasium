@@ -49,7 +49,7 @@ textarea {
 }
 
 /* Indeterminate spinner used by the Studio progress overlay. */
-@keyframes agentarium-spin {
+@keyframes agentgymnasium-spin {
   to {
     transform: rotate(360deg);
   }

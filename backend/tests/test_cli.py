@@ -1,4 +1,4 @@
-"""CLI argument parsing for `agentarium serve` (Step 25.5 — easy launch).
+"""CLI argument parsing for `agentgymnasium serve` (Step 25.5 — easy launch).
 
 We test the parser, not uvicorn: the launcher passes `--no-reload --open`, so
 those must parse correctly, and the defaults must stay backwards-compatible.
@@ -6,7 +6,7 @@ those must parse correctly, and the defaults must stay backwards-compatible.
 
 import socket
 
-from agentarium.cli import _build_parser, _port_in_use
+from agentgymnasium.cli import _build_parser, _port_in_use
 
 
 def test_serve_launcher_flags():

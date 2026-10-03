@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from agentarium.core.schemas.setup import (
+from agentgymnasium.core.schemas.setup import (
     AgentConfig,
     AgentsConfig,
     LaunchConfig,
@@ -11,8 +11,8 @@ from agentarium.core.schemas.setup import (
     ScenarioConfig,
     WorldConfig,
 )
-from agentarium.services import run_service
-from agentarium.services.run_service import create_run_from_design, hardcoded_demo_design
+from agentgymnasium.services import run_service
+from agentgymnasium.services.run_service import create_run_from_design, hardcoded_demo_design
 
 
 def _make_run() -> str:
@@ -24,7 +24,7 @@ def _make_run() -> str:
 def test_run_written_to_db(tmp_path, monkeypatch):
     """After create_run_from_design the run_id is queryable from the DB."""
     monkeypatch.setattr(run_service, "_RUNS_DIR", tmp_path)
-    monkeypatch.setattr(run_service, "_DB_PATH", tmp_path / "agentarium.db")
+    monkeypatch.setattr(run_service, "_DB_PATH", tmp_path / "agentgymnasium.db")
     run_service._init_db()
 
     run_id = _make_run()
@@ -40,9 +40,9 @@ def test_run_written_to_db(tmp_path, monkeypatch):
 
 def test_score_written_to_db(tmp_path, monkeypatch):
     """store_score persists to DB so it survives memory eviction."""
-    from agentarium.core.schemas.score import ScoreCard  # noqa: PLC0415
+    from agentgymnasium.core.schemas.score import ScoreCard  # noqa: PLC0415
     monkeypatch.setattr(run_service, "_RUNS_DIR", tmp_path)
-    monkeypatch.setattr(run_service, "_DB_PATH", tmp_path / "agentarium.db")
+    monkeypatch.setattr(run_service, "_DB_PATH", tmp_path / "agentgymnasium.db")
     run_service._init_db()
 
     run_id = _make_run()
@@ -67,7 +67,7 @@ def test_unknown_run_returns_none():
 
 def test_persisted_launch_config_redacts_api_keys(tmp_path, monkeypatch):
     monkeypatch.setattr(run_service, "_RUNS_DIR", tmp_path)
-    monkeypatch.setattr(run_service, "_DB_PATH", tmp_path / "agentarium.db")
+    monkeypatch.setattr(run_service, "_DB_PATH", tmp_path / "agentgymnasium.db")
     run_service._init_db()
     config = LaunchConfig(
         scenario=ScenarioConfig(preset="bridge_builder"),
