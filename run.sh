@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 source ./scripts/install-utils.sh
-install_init "$PWD" "Agentarium"
+install_init "$PWD" "AgentGymnasium"
 install_enable_traps
 
 action="run"
@@ -66,9 +66,9 @@ case "$action" in
     install_lock
     install_require_space "$PWD" 2
     docker compose up --detach --build
-    wait_ready "$url/api/health" || { docker compose logs; echo "Agentarium did not become healthy." >&2; exit 1; }
+    wait_ready "$url/api/health" || { docker compose logs; echo "AgentGymnasium did not become healthy." >&2; exit 1; }
     install_complete
-    echo "Agentarium is ready at $url"
+    echo "AgentGymnasium is ready at $url"
     open_url "$url"
     exit 0 ;;
 esac
@@ -78,7 +78,7 @@ if [ "$action" = doctor ]; then
   [ -n "$uv" ] || { echo "uv is missing. Run ./run.sh once." >&2; exit 1; }
   "$uv" run --frozen --no-sync agentarium --help >/dev/null
   [ -f backend/agentarium/static/index.html ] || { echo "The prebuilt UI is missing." >&2; exit 1; }
-  echo "Agentarium native environment is ready."
+  echo "AgentGymnasium native environment is ready."
   exit 0
 fi
 install_lock

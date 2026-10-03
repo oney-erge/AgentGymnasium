@@ -7,7 +7,7 @@ param(
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 . .\scripts\install-utils.ps1
-Initialize-Install -RepositoryRoot $PSScriptRoot -ProductName "Agentarium"
+Initialize-Install -RepositoryRoot $PSScriptRoot -ProductName "AgentGymnasium"
 trap { Write-InstallFailure $_; Exit-InstallLock; exit 1 }
 $UvVersion = "0.12.5"
 $Url = "http://127.0.0.1:8765"
@@ -60,10 +60,10 @@ if ($Action -in @("docker", "stop", "logs")) {
   Enter-InstallLock
   Assert-InstallFreeSpace -Path $PSScriptRoot -RequiredGB 2
   docker compose up --detach --build
-  if ($LASTEXITCODE -ne 0) { throw "Docker Compose failed to start Agentarium." }
-  if (-not (Wait-Ready "$Url/api/health")) { docker compose logs; throw "Agentarium did not become healthy at $Url." }
+  if ($LASTEXITCODE -ne 0) { throw "Docker Compose failed to start AgentGymnasium." }
+  if (-not (Wait-Ready "$Url/api/health")) { docker compose logs; throw "AgentGymnasium did not become healthy at $Url." }
   Complete-Install
-  Write-Host "Agentarium is ready at $Url" -ForegroundColor Green
+  Write-Host "AgentGymnasium is ready at $Url" -ForegroundColor Green
   if (-not $NoBrowser) { Start-Process $Url }
   exit 0
 }
@@ -72,9 +72,9 @@ $uv = Resolve-Uv
 if ($Action -eq "doctor") {
   if (-not $uv) { throw "uv is missing. Run .\run.ps1 once to install the managed runtime." }
   & $uv run --frozen --no-sync agentarium --help *> $null
-  if ($LASTEXITCODE -ne 0) { throw "The managed Agentarium environment is missing or stale. Run .\run.ps1 repair." }
+  if ($LASTEXITCODE -ne 0) { throw "The managed AgentGymnasium environment is missing or stale. Run .\run.ps1 repair." }
   if (-not (Test-Path -LiteralPath "backend\agentarium\static\index.html")) { throw "The prebuilt web UI is missing." }
-  Write-Host "Agentarium native environment is ready." -ForegroundColor Green
+  Write-Host "AgentGymnasium native environment is ready." -ForegroundColor Green
   exit 0
 }
 
@@ -106,12 +106,12 @@ if (-not (Test-Path -LiteralPath "backend\agentarium\static\index.html")) {
 
 Complete-Install
 if (Test-Ready "$Url/api/health") {
-  Write-Host "Agentarium is already running at $Url" -ForegroundColor Green
+  Write-Host "AgentGymnasium is already running at $Url" -ForegroundColor Green
   if (-not $NoBrowser) { Start-Process $Url }
   exit 0
 }
 $serveArgs = @("run", "--frozen", "--no-sync", "agentarium", "serve", "--no-reload")
 if (-not $NoBrowser) { $serveArgs += "--open" }
-Write-Host "==> Starting Agentarium at $Url" -ForegroundColor Cyan
+Write-Host "==> Starting AgentGymnasium at $Url" -ForegroundColor Cyan
 & $uv @serveArgs
 exit $LASTEXITCODE

@@ -385,7 +385,7 @@ export function SetupScreen() {
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <TopBar
-        projectName={config.project_name || 'Agentarium'}
+        projectName={config.project_name || 'AgentGymnasium'}
         status={
           backendReachable === null ? 'connecting' : backendReachable ? 'online' : 'offline'
         }

@@ -640,7 +640,7 @@ export function StudioScreen() {
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <TopBar projectName={challengeName || 'Agentarium'} status={topBarStatus} />
+      <TopBar projectName={challengeName || 'AgentGymnasium'} status={topBarStatus} />
 
       {/* Studio header */}
       <div

@@ -1,6 +1,6 @@
 # Embodiment and physical agents
 
-Agentarium's embodiment layer is a narrow, high-level contract shared by its
+AgentGymnasium's embodiment layer is a narrow, high-level contract shared by its
 deterministic mock rover and an optional robot-side ROS 2 gateway:
 
 ```text

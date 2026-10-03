@@ -42,7 +42,9 @@ from agentarium.tools.apply import apply_tool_call, material_units
 from agentarium.tools.registry import get_tool
 
 _RUNS_DIR = pathlib.Path("runs")
-_DEFAULT_PROJECT_NAMES = {"", "Agentarium Run", "Bridge Builder Lab"}
+# "Agentarium Run" is the project's former default name. Saved configs may still carry it,
+# so it stays recognised as a stale default and is replaced by the challenge name.
+_DEFAULT_PROJECT_NAMES = {"", "AgentGymnasium Run", "Agentarium Run", "Bridge Builder Lab"}
 
 # Rewards scored from an all-static design (a city needs no movable body to
 # "work") — the system prompt's "at least one MOVABLE body or score zero"
@@ -57,7 +59,7 @@ def _project_name(config: LaunchConfig, preset: ScenarioPreset | None = None) ->
     preset = preset or get_scenario_preset(config.scenario.preset)
     if preset is not None and config.project_name in _DEFAULT_PROJECT_NAMES:
         return preset.name
-    return config.project_name or (preset.name if preset is not None else "Agentarium Run")
+    return config.project_name or (preset.name if preset is not None else "AgentGymnasium Run")
 
 
 def _inject_challenge_goal(config: LaunchConfig, design: DesignSpec) -> None:

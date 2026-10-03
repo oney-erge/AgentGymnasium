@@ -27,7 +27,7 @@ _MAX_CELLS = 120
 class ExperimentManager:
     """Sequential, resumable-enough experiment scheduler.
 
-    Each matrix cell is an ordinary Agentarium launch, preserving all existing
+    Each matrix cell is an ordinary AgentGymnasium launch, preserving all existing
     validation, traces, scores, artifacts, and replay behavior. Experiments are
     local-first JSON records; an interrupted active experiment is marked failed
     on restart rather than pretending it resumed without provider credentials.

@@ -270,7 +270,8 @@ export function ScenarioWorldColumn({ config, onConfigChange }: ScenarioWorldCol
     if (!selected) return
     if (
       !projectName ||
-      projectName === 'Agentarium Run' ||
+      projectName === 'AgentGymnasium Run' ||
+      projectName === 'Agentarium Run' || // former default name, possibly saved in old configs
       projectName === 'Bridge Builder Lab'
     ) {
       onConfigChange({ project_name: selected.name } as Partial<LaunchConfig>)

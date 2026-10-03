@@ -95,7 +95,7 @@ def export_report(run_id: str) -> str | None:
     duration = trace.frames[-1].t if trace.frames else 0.0
 
     lines = [
-        f"# Agentarium Run Report — `{run_id}`",
+        f"# AgentGymnasium Run Report — `{run_id}`",
         "",
         f"**Outcome:** {outcome}",
         "",

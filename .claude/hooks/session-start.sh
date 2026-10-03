@@ -1,5 +1,5 @@
 #!/bin/bash
-# Agentarium SessionStart hook — install deps so tests/linters work in
+# AgentGymnasium SessionStart hook — install deps so tests/linters work in
 # Claude Code on the web. Synchronous and idempotent.
 set -euo pipefail
 

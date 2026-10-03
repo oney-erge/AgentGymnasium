@@ -237,7 +237,8 @@ class RunManager:
         project_name = config.project_name
         if preset is not None and project_name in (
             "",
-            "Agentarium Run",
+            "AgentGymnasium Run",
+            "Agentarium Run",  # the project's former default name, possibly saved in old configs
             "Bridge Builder Lab",
         ):
             project_name = preset.name

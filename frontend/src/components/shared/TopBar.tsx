@@ -13,7 +13,7 @@ const STATUS_META: Record<ConnectionStatus, { color: string; label: string }> = 
   offline: { color: 'var(--danger)', label: 'Server offline' },
 }
 
-export function TopBar({ projectName = 'Agentarium', status = 'connecting' }: TopBarProps) {
+export function TopBar({ projectName = 'AgentGymnasium', status = 'connecting' }: TopBarProps) {
   const meta = STATUS_META[status]
   return (
     <header
@@ -41,9 +41,9 @@ export function TopBar({ projectName = 'Agentarium', status = 'connecting' }: To
             textDecoration: 'none',
           }}
         >
-          Agentarium
+          AgentGymnasium
         </Link>
-        {projectName !== 'Agentarium' && (
+        {projectName !== 'AgentGymnasium' && (
           <>
             <span style={{ color: 'var(--border)' }}>›</span>
             <span style={{ color: 'var(--text-2)', fontSize: 12 }}>{projectName}</span>

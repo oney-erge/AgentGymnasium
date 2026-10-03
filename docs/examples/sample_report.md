@@ -1,4 +1,4 @@
-# Agentarium Run Report — `EXAMPLE_RUN`
+# AgentGymnasium Run Report — `EXAMPLE_RUN`
 
 **Outcome:** ❌ Did not meet success criteria
 

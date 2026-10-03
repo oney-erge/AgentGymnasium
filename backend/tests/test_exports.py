@@ -71,7 +71,7 @@ def test_export_report_markdown():
     r = client.get(f"/api/exports/{run_id}/report")
     assert r.status_code == 200
     body = r.text
-    assert body.startswith("# Agentarium Run Report")
+    assert body.startswith("# AgentGymnasium Run Report")
     assert "## Score" in body
     assert "## Metrics" in body
     assert "## Design" in body

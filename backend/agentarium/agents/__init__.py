@@ -39,7 +39,7 @@ _PROVIDER_META: list[dict] = [
         "requires_api_key": False,
         "description": (
             "LocalDeploy OpenAI-compatible server. Run the LocalDeploy GitHub "
-            "repo locally, then point Agentarium at its /v1 endpoint."
+            "repo locally, then point AgentGymnasium at its /v1 endpoint."
         ),
     },
     {

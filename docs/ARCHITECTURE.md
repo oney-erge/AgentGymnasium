@@ -1,6 +1,6 @@
 # Architecture
 
-Agentarium is a setup-first loop: you configure a run, an LLM agent builds a
+AgentGymnasium is a setup-first loop: you configure a run, an LLM agent builds a
 design by emitting **validated tool calls**, a physics engine simulates it into
 an engine-neutral **trace**, the trace is scored by a named **reward**, and the
 Studio replays the trace while streaming live events. This document maps the

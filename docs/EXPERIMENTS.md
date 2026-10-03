@@ -1,7 +1,7 @@
 # Model experiments
 
-Agentarium evaluates models as controlled run matrices rather than as isolated
-demos. Every cell is a normal persisted Agentarium launch, so it keeps the
+AgentGymnasium evaluates models as controlled run matrices rather than as isolated
+demos. Every cell is a normal persisted AgentGymnasium launch, so it keeps the
 design, trace, score, tool calls, model interactions, launch config, and
 provenance needed to audit or replay the result.
 
