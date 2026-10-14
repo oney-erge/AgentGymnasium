@@ -258,3 +258,7 @@ Historical planning docs:
 - [`docs/archive/`](docs/archive/) captures the original product plan, build
   sequence, and early gap analysis. Treat these as background unless you are
   auditing how the MVP got here.
+
+## Author
+
+Built by [Oney Erge](https://oneyerge.com).
