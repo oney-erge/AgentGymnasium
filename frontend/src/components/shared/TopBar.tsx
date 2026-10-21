@@ -26,10 +26,11 @@ export function TopBar({ projectName = 'AgentGymnasium', status = 'connecting' }
         background: 'var(--surface-1)',
         borderBottom: '1px solid var(--border)',
         flexShrink: 0,
+        gap: 12,
       }}
     >
       {/* Left: wordmark (→ home/setup) + project */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
         <Link
           to="/setup"
           title="Back to Simulation Setup"
@@ -52,7 +53,18 @@ export function TopBar({ projectName = 'AgentGymnasium', status = 'connecting' }
       </div>
 
       {/* Right: status + actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      {/* On a narrow screen the links scroll sideways inside the bar instead of widening the page. */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+          minWidth: 0,
+          overflowX: 'auto',
+          whiteSpace: 'nowrap',
+          scrollbarWidth: 'none',
+        }}
+      >
         <span style={{ fontSize: 11, color: meta.color, display: 'flex', alignItems: 'center', gap: 4 }}>
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: meta.color, display: 'inline-block' }} />
           {meta.label}

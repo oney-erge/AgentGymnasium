@@ -271,6 +271,16 @@ function ToggleRow({
 
 // ─── Validation banner ────────────────────────────────────────────────────────
 
+
+/** The backend names missing fields by path; say what to do in words for the common first-run one. */
+function describeMissingField(field: string): string {
+  const model = /^agents\.participants\[(\d+)\]\.model$/.exec(field)
+  if (model) {
+    return `Agent ${String.fromCharCode(65 + Number(model[1]))} has no model. Pick one, or choose Mock / No model for an offline run`
+  }
+  return field
+}
+
 function ValidationBanner({ result }: { result: ValidationResult | null }) {
   if (!result) {
     return (
@@ -335,7 +345,7 @@ function ValidationBanner({ result }: { result: ValidationResult | null }) {
 
   const messages: Record<LaunchState, string> = {
     READY: '✓ Ready to Launch — Your setup is valid.',
-    MISSING_REQUIRED: `Missing required fields: ${(missing ?? []).join(', ')}`,
+    MISSING_REQUIRED: `Can't launch yet: ${(missing ?? []).map(describeMissingField).join(' · ')}`,
     LLM_OFFLINE: (missing ?? []).length
       ? (missing ?? []).join(' · ')
       : 'LLM endpoint offline — check connection',
