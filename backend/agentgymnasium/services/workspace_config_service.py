@@ -12,6 +12,7 @@ from agentgymnasium.core.schemas.setup import (
     ToolsConfig,
     WorldConfig,
 )
+from agentgymnasium.tools.registry import get_all_tools
 
 _WORKSPACE_CONFIG_PATH = pathlib.Path("runs") / "workspace_config.json"
 
@@ -29,18 +30,21 @@ def default_workspace_config() -> LaunchConfig:
         agents=AgentsConfig(
             mode="single",
             participants=[
+                # The offline mock agent, so a first launch works without a model server or an
+                # API key. Switching to LocalDeploy or another endpoint is one dropdown away.
                 AgentConfig(
                     id="agent_a",
                     name="Agent A",
-                    provider="localdeploy",
-                    model="qwen3_8b_ollama",
-                    endpoint_url="http://127.0.0.1:8000/v1",
+                    provider="mock",
+                    model="mock",
                     temperature=0.2,
                 )
             ],
         ),
         llm_connection=LLMConnectionConfig(endpoint_url="http://127.0.0.1:8000/v1"),
-        tools=ToolsConfig(enabled=[]),
+        # The registry's own defaults, which cover every tool the bundled challenges require.
+        # An empty list left the first launch blocked on "requires tool: create_body".
+        tools=ToolsConfig(enabled=[tool.name for tool in get_all_tools() if tool.enabled_by_default]),
         constraints=ConstraintsConfig(
             max_parts=300,
             max_joints=120,
