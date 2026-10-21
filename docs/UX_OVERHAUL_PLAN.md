@@ -28,7 +28,7 @@ Grounding for what this class of user expects from an eval harness (external sou
 reproducibility via captured resolved config + versions, **multiple seeds reported as
 mean ± std**, batched runs, and standardized per-run "rollout cards" — see
 [lm-evaluation-harness](https://qaskills.sh/blog/lm-evaluation-harness-tutorial-2026),
-[EleutherAI on evaluating LLMs](https://www.eleuther.ai/projects/large-language-model-evaluation),
+[EleutherAI's lm-evaluation-harness repository](https://github.com/EleutherAI/lm-evaluation-harness),
 [Rollout Cards: A Reproducibility Standard for Agent Research](https://arxiv.org/pdf/2605.12131),
 and comparison-UI conventions (URL-shareable filters, per-task success rates, group-by-model)
 from public leaderboards like [BenchLM](https://benchlm.ai/) and
