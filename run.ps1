@@ -82,12 +82,13 @@ Enter-InstallLock
 Assert-InstallFreeSpace -Path $PSScriptRoot -RequiredGB 2
 if (-not $uv) { $uv = Install-Uv }
 Write-Host "==> Synchronizing the locked runtime" -ForegroundColor Cyan
+Remove-IncompleteVenv $PSScriptRoot
 $syncArgs = @("sync", "--frozen", "--no-dev")
 if ($Action -eq "repair") { $syncArgs += "--reinstall" }
 Invoke-InstallRetry "dependency synchronization" {
-  $output = & $uv @syncArgs 2>&1
-  if ($LASTEXITCODE -ne 0) { throw "uv sync failed: $($output -join [Environment]::NewLine)" }
-  $output | Write-Host
+  $result = Invoke-InstallNative $uv $syncArgs
+  if ($result.ExitCode -ne 0) { throw "uv sync failed: $($result.Output -join [Environment]::NewLine)" }
+  $result.Output | Write-Host
 }
 
 if (-not (Test-Path -LiteralPath "backend\agentgymnasium\static\index.html")) {
@@ -95,9 +96,9 @@ if (-not (Test-Path -LiteralPath "backend\agentgymnasium\static\index.html")) {
   Push-Location frontend
   try {
     Invoke-InstallRetry "frontend dependency installation" {
-      $output = & npm ci 2>&1
-      if ($LASTEXITCODE -ne 0) { throw "npm ci failed: $($output -join [Environment]::NewLine)" }
-      $output | Write-Host
+      $result = Invoke-InstallNative "npm" @("ci")
+      if ($result.ExitCode -ne 0) { throw "npm ci failed: $($result.Output -join [Environment]::NewLine)" }
+      $result.Output | Write-Host
     }
     npm run build
     if ($LASTEXITCODE -ne 0) { throw "Frontend build failed." }

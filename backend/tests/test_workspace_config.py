@@ -47,3 +47,19 @@ def test_workspace_config_reports_invalid_json(tmp_path, monkeypatch):
 
     assert response.status_code == 422
     assert "Workspace config JSON is invalid" in response.json()["detail"]
+
+
+def test_fresh_workspace_default_can_be_launched_without_a_model_server(tmp_path, monkeypatch):
+    """The first screen a new user sees must not be blocked: no LocalDeploy running, no API key."""
+    import asyncio
+
+    from agentgymnasium.core.schemas.setup import LaunchState
+    from agentgymnasium.setup.validators import validate_launch_config
+
+    monkeypatch.setattr(workspace_config_service, "_WORKSPACE_CONFIG_PATH", tmp_path / "workspace_config.json")
+
+    config = workspace_config_service.default_workspace_config()
+    result = asyncio.run(validate_launch_config(config))
+
+    assert config.agents.participants[0].provider.value == "mock"
+    assert result.state == LaunchState.ready, result
