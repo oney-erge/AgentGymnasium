@@ -42,7 +42,8 @@ app.add_middleware(
 
 @app.get("/api/health")
 async def health() -> dict:
-    return {"status": "ok", "version": __version__}
+    # "service" lets a launcher tell AgentGymnasium from another local tool on the same port (YBM also uses 8765).
+    return {"status": "ok", "service": "agentgymnasium", "version": __version__}
 
 
 # Serve built frontend when it exists (production)

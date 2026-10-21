@@ -60,3 +60,43 @@ def test_headless_run_and_sweep_flags():
     sweep = _build_parser().parse_args(["sweep", "--matrix", "matrix.json"])
     assert sweep.command == "sweep"
     assert sweep.matrix == "matrix.json"
+
+
+def test_busy_port_message_names_the_other_program_when_it_is_not_agentgymnasium(monkeypatch):
+    from agentgymnasium import cli
+
+    monkeypatch.setattr(cli, "_is_agentgymnasium", lambda host, port: False)
+    message = cli._port_busy_message("127.0.0.1", 8765)
+
+    assert "already in use by another program" in message
+    assert "agentgymnasium serve --port 8766" in message
+
+
+def test_busy_port_message_says_so_when_agentgymnasium_is_already_running(monkeypatch):
+    from agentgymnasium import cli
+
+    monkeypatch.setattr(cli, "_is_agentgymnasium", lambda host, port: True)
+
+    assert "AgentGymnasium is already running on port 8765" in cli._port_busy_message("127.0.0.1", 8765)
+
+
+def test_is_agentgymnasium_reads_the_service_field(monkeypatch):
+    import io
+
+    from agentgymnasium import cli
+
+    class _Resp(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+    monkeypatch.setattr(
+        cli.urllib.request, "urlopen", lambda *a, **k: _Resp(b'{"status": "ok", "service": "agentgymnasium"}')
+    )
+    assert cli._is_agentgymnasium("127.0.0.1", 8765) is True
+    monkeypatch.setattr(
+        cli.urllib.request, "urlopen", lambda *a, **k: _Resp(b'{"status": "ok", "instance": "ybm-control"}')
+    )
+    assert cli._is_agentgymnasium("127.0.0.1", 8765) is False

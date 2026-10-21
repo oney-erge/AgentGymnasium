@@ -103,6 +103,29 @@ def _port_in_use(host: str, port: int) -> bool:
             return False
 
 
+def _is_agentgymnasium(host: str, port: int) -> bool:
+    """True when the program listening on host:port is an AgentGymnasium server."""
+    try:
+        probe_host = "127.0.0.1" if host in ("0.0.0.0", "") else host
+        with urllib.request.urlopen(f"http://{probe_host}:{port}/api/health", timeout=1.0) as resp:
+            return json.loads(resp.read().decode("utf-8")).get("service") == "agentgymnasium"
+    except Exception:  # noqa: BLE001 - anything else on that port is simply "not us"
+        return False
+
+
+def _port_busy_message(host: str, port: int) -> str:
+    if _is_agentgymnasium(host, port):
+        return (
+            f"\n  AgentGymnasium is already running on port {port}.\n"
+            f"  Open http://localhost:{port} in your browser, or stop it and try again.\n"
+        )
+    return (
+        f"\n  Port {port} is already in use by another program (YBM also defaults to 8765).\n"
+        f"  Stop that program, or start AgentGymnasium on a different port:\n"
+        f"    agentgymnasium serve --port {port + 1}\n"
+    )
+
+
 def _open_when_ready(url: str, health_url: str) -> None:
     """Open ``url`` only once the server answers /api/health (max ~20s)."""
 
@@ -134,12 +157,7 @@ def main(argv: list[str] | None = None) -> None:
         reload = getattr(args, "reload", False)
 
         if _port_in_use(host, port):
-            print(
-                f"\n  Port {port} is already in use — is AgentGymnasium already running?\n"
-                f"  Open http://localhost:{port} in your browser, or stop the other\n"
-                f"  process and try again (or pass a different --port).\n",
-                file=sys.stderr,
-            )
+            print(_port_busy_message(host, port), file=sys.stderr)
             raise SystemExit(1)
 
         if getattr(args, "open_browser", False):
