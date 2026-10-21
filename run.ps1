@@ -36,15 +36,15 @@ function Install-Uv {
 
 function Wait-Ready([string]$HealthUrl) {
   for ($i = 0; $i -lt 60; $i++) {
-    try {
-      Invoke-RestMethod -Uri $HealthUrl -TimeoutSec 2 | Out-Null
-      return $true
-    } catch { Start-Sleep -Milliseconds 500 }
+    if (Test-Ready $HealthUrl) { return $true }
+    Start-Sleep -Milliseconds 500
   }
   return $false
 }
+# Port 8765 is also YBM's default, so "something answered" is not enough: only AgentGymnasium reports
+# service = agentgymnasium. Otherwise this launcher said AgentGymnasium was already running when YBM was.
 function Test-Ready([string]$HealthUrl) {
-  try { Invoke-RestMethod -Uri $HealthUrl -TimeoutSec 2 | Out-Null; return $true } catch { return $false }
+  try { return ((Invoke-RestMethod -Uri $HealthUrl -TimeoutSec 2).service -eq "agentgymnasium") } catch { return $false }
 }
 
 if ($Action -in @("docker", "stop", "logs")) {
