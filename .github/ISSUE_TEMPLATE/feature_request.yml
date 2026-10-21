@@ -1,0 +1,22 @@
+name: Feature request
+description: Suggest something AgentGymnasium should do.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: Describe the challenge, experiment, or workflow first, then the change you have in mind.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like AgentGymnasium to do?
+      description: If it needs a new tool, challenge, or scoring rule, say what the agent would see and how it should be scored.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What have you tried?
+      description: Existing challenges, tools, or experiment settings.
