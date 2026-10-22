@@ -1,6 +1,6 @@
 [project]
 name = "agentgymnasium"
-version = "0.1.0"
+version = "0.1.1"
 description = "Visual AI physics sandbox where agents build objects in simulated worlds"
 requires-python = ">=3.11"
 dependencies = [
