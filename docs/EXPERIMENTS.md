@@ -23,23 +23,54 @@ Experiments are intentionally bounded to 120 cells and run sequentially. That
 keeps local endpoints and laptops usable and avoids changing results through
 uncontrolled concurrency. Cancellation takes effect after the current cell.
 
+After a server restart, an interrupted experiment remains stopped until you
+choose **Resume queued cells**. Completed cells stay intact. An in-flight cell
+is marked failed and is never retried automatically because a provider request
+may already have run or incurred a charge. Supply keys again for queued model
+variants if required; credentials are not saved. Older records without the
+in-flight checkpoint cannot be safely resumed and remain available to inspect.
+The API also accepts `POST /api/experiments/{id}/resume` with an `api_keys`
+object keyed by queued model variant ID; sending this request explicitly starts
+the remaining cells.
+
 ## Statistics
 
 The Experiments screen reports:
 
 - sample count and success rate;
 - mean score and sample standard deviation;
-- normal-approximation 95% confidence interval;
+- Student-t 95% confidence interval when at least two scores are available;
 - mean model latency and total tokens;
 - pairwise comparisons on matching `(seed, repeat)` cells;
 - paired win/tie/loss counts, mean score delta, and its 95% interval.
 
-Small samples should be read as smoke evidence, not as a definitive leaderboard.
+The interval assumes independent observations and an approximately normal mean;
+repeated runs using the same seed may not be independent. For more than 30
+degrees of freedom the 30-df critical value is used conservatively. No interval
+is reported for fewer than two observations or pairs. Samples smaller than five
+are preliminary and should be read as smoke evidence, not a definitive leaderboard.
 Use several representative tasks, enough paired seeds, and repeats when model
 sampling is non-deterministic. A confidence interval that includes zero does not
 establish a score difference.
 
 ## Headless sweep
+
+Try the versioned [offline bridge comparison](examples/bridge-comparison-v1.yaml)
+first:
+
+```bash
+uv run agentgymnasium sweep --matrix docs/examples/bridge-comparison-v1.yaml
+```
+
+It prints each trial, per-variant aggregates, and paired comparisons as JSON.
+Both variants use scripted mock tool calls: they demonstrate the pipeline and
+are not evidence of real model performance. For a real comparison, copy the
+file, configure the model providers and endpoints, and record the model versions
+and any provider costs alongside the resulting experiment.
+
+An offline Windows run of this exact pack completed six cells. Both scripted
+variants scored 80 on seeds 7, 11, and 42, so all three paired comparisons
+were ties. This is an example of the output, not a model leaderboard.
 
 Create a YAML or JSON matrix:
 

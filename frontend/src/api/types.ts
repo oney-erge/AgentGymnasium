@@ -401,6 +401,8 @@ export interface ExperimentRecord {
   finished_at?: number | null
   cells: ExperimentCell[]
   error?: string | null
+  recovery_safe: boolean
+  interrupted: boolean
 }
 
 export interface ExperimentAggregate {
@@ -411,8 +413,8 @@ export interface ExperimentAggregate {
   success_rate: number
   mean_score: number
   stddev_score: number
-  ci95_low: number
-  ci95_high: number
+  ci95_low: number | null
+  ci95_high: number | null
   mean_latency_ms: number
   mean_tokens: number
 }
@@ -427,8 +429,8 @@ export interface ExperimentPairwise {
   ties: number
   wins_b: number
   mean_score_delta: number
-  ci95_low: number
-  ci95_high: number
+  ci95_low: number | null
+  ci95_high: number | null
 }
 
 export interface TokenUsage {

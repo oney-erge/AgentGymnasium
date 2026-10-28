@@ -1,0 +1,35 @@
+# Version 1 of the offline bridge comparison. Both variants use scripted
+# mock tool calls; the results are a pipeline demonstration, not model scores.
+name: bridge-comparison-v1-offline
+base_config:
+  project_name: Bridge comparison v1
+  scenario:
+    preset: bridge_builder
+    objective: Carry the crate over the real gap.
+    reward: bridge_transport
+  world:
+    template: island_cliff_small
+    seed: 7
+  agents:
+    mode: single
+    participants:
+      - id: builder
+        name: Builder
+        provider: mock
+        model: mock
+  tools:
+    enabled: [create_body, add_beam, add_joint, run_simulation, inspect_score]
+  constraints:
+    max_attempts: 1
+    agent_turns_per_attempt: 2
+models:
+  - id: mock-a
+    label: Scripted mock A
+    provider: mock
+    model: mock-a
+  - id: mock-b
+    label: Scripted mock B
+    provider: mock
+    model: mock-b
+seeds: [7, 11, 42]
+repeats: 1

@@ -23,6 +23,7 @@ export function ExperimentsScreen() {
   const [models, setModels] = useState('mock-a\nmock-b')
   const [endpoint, setEndpoint] = useState('http://127.0.0.1:8000/v1')
   const [apiKey, setApiKey] = useState('')
+  const [resumeKeys, setResumeKeys] = useState<Record<string, string>>({})
   const [seeds, setSeeds] = useState('7, 11, 42')
   const [repeats, setRepeats] = useState(1)
   const [busy, setBusy] = useState(false)
@@ -137,6 +138,23 @@ export function ExperimentsScreen() {
     await refresh()
   }
 
+  async function resume() {
+    if (!selected || busy) return
+    setBusy(true)
+    setError(null)
+    try {
+      const pendingIds = new Set(selected.cells.filter((cell) => cell.status === 'queued').map((cell) => cell.model_variant_id))
+      const apiKeys = Object.fromEntries([...pendingIds].map((id) => [id, resumeKeys[`${selected.id}:${id}`]]).filter(([, value]) => value))
+      await api.post(`/experiments/${selected.id}/resume`, { api_keys: apiKeys })
+      setResumeKeys({})
+      await refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not resume experiment.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <TopBar projectName="Experiments" status={error ? 'offline' : 'online'} />
@@ -222,6 +240,22 @@ export function ExperimentsScreen() {
                   </button>
                 )}
               </div>
+              {selected?.interrupted && (
+                <div style={muted()}>
+                  <p>The server restarted. Any in-flight cell was not retried and may have incurred a provider charge. Completed cells are preserved.</p>
+                  {selected.recovery_safe && selected.cells.some((cell) => cell.status === 'queued') ? (
+                    <>
+                      <p>Resume only the remaining queued cells. Provider calls may incur charges. Re-enter keys if needed; they are not saved.</p>
+                      {selected.spec.models.filter((model) => model.provider !== 'mock' && selected.cells.some((cell) => cell.status === 'queued' && cell.model_variant_id === model.id)).map((model) => (
+                        <Field key={model.id} label={`API key for ${model.label} (optional)`}>
+                          <input type="password" value={resumeKeys[`${selected.id}:${model.id}`] ?? ''} onChange={(event) => setResumeKeys((keys) => ({ ...keys, [`${selected.id}:${model.id}`]: event.target.value }))} style={input()} />
+                        </Field>
+                      ))}
+                      <button type="button" disabled={busy} onClick={() => void resume()} style={secondary()}>Resume queued cells</button>
+                    </>
+                  ) : selected.recovery_safe ? <p>No queued cells remain to resume.</p> : <p>This older experiment cannot be resumed safely; start a new one if needed.</p>}
+                </div>
+              )}
               <div style={{ height: 6, background: 'var(--surface-2)', borderRadius: 8, marginTop: 12 }}>
                 <div
                   style={{
@@ -233,6 +267,9 @@ export function ExperimentsScreen() {
                 />
               </div>
               {aggregates.length > 0 && (
+                <>
+                <p style={muted()}>95% intervals use Student-t and assume independent observations.
+                  Fewer than five observations are preliminary; one observation has no interval.</p>
                 <table style={table()}>
                   <thead>
                     <tr><Th>Model</Th><Th>n</Th><Th>Success</Th><Th>Mean ± SD</Th><Th>95% CI</Th><Th>Tokens</Th><Th>Latency</Th></tr>
@@ -244,13 +281,14 @@ export function ExperimentsScreen() {
                         <Td>{aggregate.n}</Td>
                         <Td>{(aggregate.success_rate * 100).toFixed(0)}%</Td>
                         <Td>{aggregate.mean_score.toFixed(1)} ± {aggregate.stddev_score.toFixed(1)}</Td>
-                        <Td>{aggregate.ci95_low.toFixed(1)}–{aggregate.ci95_high.toFixed(1)}</Td>
+                        <Td>{aggregate.ci95_low == null || aggregate.ci95_high == null ? 'n < 2' : `${aggregate.ci95_low.toFixed(1)}–${aggregate.ci95_high.toFixed(1)}`}</Td>
                         <Td>{aggregate.mean_tokens.toFixed(0)}</Td>
                         <Td>{aggregate.mean_latency_ms.toFixed(0)}ms</Td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+                </>
               )}
               {pairwise.some((comparison) => comparison.n_pairs > 0) && (
                 <>
@@ -266,7 +304,7 @@ export function ExperimentsScreen() {
                           <Td>{comparison.n_pairs}</Td>
                           <Td>{comparison.wins_a} / {comparison.ties} / {comparison.wins_b}</Td>
                           <Td>{comparison.mean_score_delta.toFixed(2)}</Td>
-                          <Td>{comparison.ci95_low.toFixed(2)}…{comparison.ci95_high.toFixed(2)}</Td>
+                          <Td>{comparison.ci95_low == null || comparison.ci95_high == null ? 'n < 2' : `${comparison.ci95_low.toFixed(2)}…${comparison.ci95_high.toFixed(2)}`}</Td>
                         </tr>
                       ))}
                     </tbody>

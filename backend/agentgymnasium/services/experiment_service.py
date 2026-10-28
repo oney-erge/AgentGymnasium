@@ -23,14 +23,33 @@ from agentgymnasium.services.run_service import get_model_interactions, get_scor
 _EXPERIMENTS_DIR = pathlib.Path("runs") / "experiments"
 _MAX_CELLS = 120
 
+# Two-sided 95% Student-t critical values for 1..30 degrees of freedom.
+# For larger samples the 30-df value is conservative; no statistics package is
+# required and the same rule is used for scores and paired differences.
+_T95 = (
+    12.706, 4.303, 3.182, 2.776, 2.571, 2.447, 2.365, 2.306, 2.262, 2.228,
+    2.201, 2.179, 2.160, 2.145, 2.131, 2.120, 2.110, 2.101, 2.093, 2.086,
+    2.080, 2.074, 2.069, 2.064, 2.060, 2.056, 2.052, 2.048, 2.045, 2.042,
+)
+
+
+def _mean_interval(values: list[float]) -> tuple[float | None, float | None]:
+    """Student-t interval for independent observations; unavailable for n < 2."""
+    if len(values) < 2:
+        return None, None
+    mean = statistics.fmean(values)
+    critical = _T95[min(len(values) - 1, len(_T95)) - 1]
+    margin = critical * statistics.stdev(values) / math.sqrt(len(values))
+    return mean - margin, mean + margin
+
 
 class ExperimentManager:
-    """Sequential, resumable-enough experiment scheduler.
+    """Sequential experiment scheduler with explicit interruption recovery.
 
     Each matrix cell is an ordinary AgentGymnasium launch, preserving all existing
     validation, traces, scores, artifacts, and replay behavior. Experiments are
-    local-first JSON records; an interrupted active experiment is marked failed
-    on restart rather than pretending it resumed without provider credentials.
+    local-first JSON records. Only queued cells can be resumed after restart;
+    an in-flight cell is marked failed because it may already have incurred work.
     """
 
     def __init__(
@@ -55,10 +74,19 @@ class ExperimentManager:
                 )
             except Exception:
                 continue
+            # A record from disk must not choose an arbitrary persistence path.
+            if record.id != path.stem:
+                continue
             if record.status in (ExperimentStatus.queued, ExperimentStatus.running):
                 record.status = ExperimentStatus.failed
                 record.finished_at = time.time()
+                record.interrupted = True
                 record.error = "Server restarted before the experiment completed."
+                for cell in record.cells:
+                    if cell.status == CellStatus.running:
+                        cell.status = CellStatus.failed
+                        cell.error = "Interrupted in flight; this cell was not retried."
+                self._persist(record)
             self.records[record.id] = record
 
     @staticmethod
@@ -102,8 +130,34 @@ class ExperimentManager:
             spec=spec,
             created_at=time.time(),
             cells=cells,
+            recovery_safe=True,
         )
         self.records[experiment_id] = record
+        self._persist(record)
+        task = asyncio.create_task(self._execute(record))
+        self.tasks[experiment_id] = task
+        task.add_done_callback(lambda _task: self.tasks.pop(experiment_id, None))
+        return self._redact(record)
+
+    async def resume(self, experiment_id: str, api_keys: dict[str, str]) -> ExperimentRecord:
+        record = self.records.get(experiment_id)
+        if record is None:
+            raise ValueError("Experiment not found.")
+        if not record.interrupted or not record.recovery_safe:
+            raise ValueError("Only safely recorded interrupted experiments can be resumed.")
+        if experiment_id in self.tasks:
+            raise ValueError("Experiment is already running.")
+        pending_ids = {c.model_variant_id for c in record.cells if c.status == CellStatus.queued}
+        if not pending_ids:
+            raise ValueError("No queued cells remain to resume.")
+        if set(api_keys) - pending_ids:
+            raise ValueError("Credentials may only be supplied for queued model variants.")
+        for variant in record.spec.models:
+            variant.api_key = api_keys.get(variant.id)
+        record.interrupted = False
+        record.status = ExperimentStatus.queued
+        record.error = None
+        record.finished_at = None
         self._persist(record)
         task = asyncio.create_task(self._execute(record))
         self.tasks[experiment_id] = task
@@ -143,6 +197,8 @@ class ExperimentManager:
         self._persist(record)
         try:
             for cell in record.cells:
+                if cell.status != CellStatus.queued:
+                    continue
                 if record.id in self.cancel_requested:
                     cell.status = CellStatus.cancelled
                     continue
@@ -187,6 +243,7 @@ class ExperimentManager:
         config.project_name = f"{record.spec.name} · {variant.label} · seed {cell.seed}"
 
         cell.status = CellStatus.running
+        self._persist(record)
         launch_id = await self.runs.create_run(
             config,
             provenance={
@@ -238,7 +295,7 @@ class ExperimentManager:
             scores = [float(c.score) for c in cells if c.score is not None]
             mean = statistics.fmean(scores)
             stddev = statistics.stdev(scores) if len(scores) > 1 else 0.0
-            margin = 1.96 * stddev / math.sqrt(len(scores)) if len(scores) > 1 else 0.0
+            ci_low, ci_high = _mean_interval(scores)
             result.append(
                 ExperimentAggregate(
                     model_variant_id=variant.id,
@@ -248,8 +305,8 @@ class ExperimentManager:
                     success_rate=sum(1 for c in cells if c.success) / len(cells),
                     mean_score=mean,
                     stddev_score=stddev,
-                    ci95_low=mean - margin,
-                    ci95_high=mean + margin,
+                    ci95_low=ci_low,
+                    ci95_high=ci_high,
                     mean_latency_ms=statistics.fmean(c.latency_ms for c in cells),
                     mean_tokens=statistics.fmean(
                         c.input_tokens + c.output_tokens for c in cells
@@ -284,8 +341,7 @@ class ExperimentManager:
                 ]
                 n_pairs = len(deltas)
                 mean_delta = statistics.fmean(deltas) if deltas else 0.0
-                stddev = statistics.stdev(deltas) if n_pairs > 1 else 0.0
-                margin = 1.96 * stddev / math.sqrt(n_pairs) if n_pairs > 1 else 0.0
+                ci_low, ci_high = _mean_interval(deltas)
                 comparisons.append(
                     ExperimentPairwise(
                         model_a_id=model_a,
@@ -297,8 +353,8 @@ class ExperimentManager:
                         ties=sum(abs(delta) <= 1e-9 for delta in deltas),
                         wins_b=sum(delta < -1e-9 for delta in deltas),
                         mean_score_delta=mean_delta,
-                        ci95_low=mean_delta - margin,
-                        ci95_high=mean_delta + margin,
+                        ci95_low=ci_low,
+                        ci95_high=ci_high,
                     )
                 )
         return comparisons

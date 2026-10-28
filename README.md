@@ -39,6 +39,8 @@ Start with the offline `mock` provider. It runs the complete loop with
 scripted tool calls and needs neither a model nor an API key. For a real model,
 connect [LocalDeploy](https://github.com/oney-erge/LocalDeploy) or another
 OpenAI-compatible endpoint; see [provider setup](docs/GETTING_STARTED.md#openai-api-key).
+For a repeatable, model-free comparison, run the [versioned bridge example](docs/EXPERIMENTS.md#headless-sweep).
+Its mock results demonstrate the pipeline, not model intelligence.
 
 ## What you can do
 

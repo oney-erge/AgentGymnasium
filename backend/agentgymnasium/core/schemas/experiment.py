@@ -66,8 +66,8 @@ class ExperimentAggregate(BaseModel):
     success_rate: float
     mean_score: float
     stddev_score: float
-    ci95_low: float
-    ci95_high: float
+    ci95_low: float | None
+    ci95_high: float | None
     mean_latency_ms: float
     mean_tokens: float
 
@@ -82,8 +82,8 @@ class ExperimentPairwise(BaseModel):
     ties: int
     wins_b: int
     mean_score_delta: float
-    ci95_low: float
-    ci95_high: float
+    ci95_low: float | None
+    ci95_high: float | None
 
 
 class ExperimentRecord(BaseModel):
@@ -95,3 +95,11 @@ class ExperimentRecord(BaseModel):
     finished_at: float | None = None
     cells: list[ExperimentCell] = Field(default_factory=list)
     error: str | None = None
+    recovery_safe: bool = False
+    interrupted: bool = False
+
+
+class ResumeExperimentRequest(BaseModel):
+    """Credentials for queued variants; never stored in the experiment record."""
+
+    api_keys: dict[str, str] = Field(default_factory=dict, exclude=True, repr=False)

@@ -7,6 +7,7 @@ from agentgymnasium.core.schemas.experiment import (
     ExperimentPairwise,
     ExperimentRecord,
     ExperimentSpec,
+    ResumeExperimentRequest,
 )
 from agentgymnasium.core.schemas.setup import LaunchState
 from agentgymnasium.services.experiment_service import experiment_manager
@@ -85,3 +86,26 @@ async def cancel_experiment(experiment_id: str) -> ExperimentRecord:
     if record is None:
         raise HTTPException(status_code=404, detail="Experiment not found")
     return record
+
+
+@router.post("/{experiment_id}/resume", response_model=ExperimentRecord)
+async def resume_experiment(
+    experiment_id: str, request: ResumeExperimentRequest
+) -> ExperimentRecord:
+    record = experiment_manager.get(experiment_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    if not record.interrupted or not record.recovery_safe:
+        raise HTTPException(status_code=409, detail="Experiment cannot be safely resumed")
+    pending_ids = {cell.model_variant_id for cell in record.cells if cell.status == "queued"}
+    if not pending_ids or set(request.api_keys) - pending_ids:
+        raise HTTPException(status_code=409, detail="No queued cells or unknown credential variant")
+    spec = record.spec.model_copy(deep=True)
+    spec.models = [variant for variant in spec.models if variant.id in pending_ids]
+    for variant in spec.models:
+        variant.api_key = request.api_keys.get(variant.id)
+    await _validate_spec(spec)
+    try:
+        return await experiment_manager.resume(experiment_id, request.api_keys)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc

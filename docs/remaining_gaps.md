@@ -18,8 +18,8 @@ under `docs/archive/`; shipped details are in `IMPROVEMENTS.md`.
 
 | Priority | Gap | What “done” means |
 | --- | --- | --- |
-| High | The UI reports normal-approximation 95% intervals even for small samples. | Student-t/bootstrap intervals, explicit minimum-sample warnings, effect sizes, multiple-task aggregation, and raw CSV/Parquet export. |
-| High | Experiments stop after restart rather than resuming. | Persist a credential-free schedule, resume queued cells only after operator reauthorization, and record environment/provider versions. |
+| High | Experiment summaries do not yet report effect sizes or aggregate across tasks. | Add effect sizes, multiple-task aggregation, and raw CSV/Parquet export; retain sample-size warnings and the Student-t interval's assumptions. |
+| Medium | Experiment recovery does not record all environment/provider versions. | Record version metadata and make differences visible when resuming queued cells after operator reauthorization. |
 | Medium | The scheduler is sequential only. | Resource-aware workers with per-endpoint concurrency/rate limits while preserving paired scheduling and deterministic local runs. |
 | Medium | Model capability negotiation is shallow. | Detect native-tool, seed, usage, streaming, and structured-output support per endpoint; persist negotiated capability/version metadata. |
 | Medium | No canonical benchmark suite spans simulation and embodiment. | Versioned task packs with golden mock traces, normalized scores, fixed tool contracts, calibration metadata, and a release process. |
