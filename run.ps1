@@ -50,7 +50,7 @@ function Test-Ready([string]$HealthUrl) {
 if ($Action -in @("docker", "stop", "logs")) {
   $docker = Get-Command docker -ErrorAction SilentlyContinue
   $engineRunning = $false
-  if ($docker) { docker info *> $null; $engineRunning = ($LASTEXITCODE -eq 0) }
+  if ($docker) { $null = Invoke-NativeQuiet docker @("info"); $engineRunning = ($LASTEXITCODE -eq 0) }
   if ($Action -eq "stop" -and -not $engineRunning) { Write-Host "The native server runs in the foreground. Press Ctrl+C in its terminal to stop it."; exit 0 }
   if ($Action -eq "logs" -and -not $engineRunning) { Write-Host "The native server writes logs to its foreground terminal."; exit 0 }
   if (-not $docker) { throw "Docker is not installed. Install Docker Desktop, then rerun with '$Action'." }
@@ -71,7 +71,7 @@ if ($Action -in @("docker", "stop", "logs")) {
 $uv = Resolve-Uv
 if ($Action -eq "doctor") {
   if (-not $uv) { throw "uv is missing. Run .\run.ps1 once to install the managed runtime." }
-  & $uv run --frozen --no-sync agentgymnasium --help *> $null
+  $null = Invoke-NativeQuiet $uv @("run","--frozen","--no-sync","agentgymnasium","--help")
   if ($LASTEXITCODE -ne 0) { throw "The managed AgentGymnasium environment is missing or stale. Run .\run.ps1 repair." }
   if (-not (Test-Path -LiteralPath "backend\agentgymnasium\static\index.html")) { throw "The prebuilt web UI is missing." }
   Write-Host "AgentGymnasium native environment is ready." -ForegroundColor Green
