@@ -19,10 +19,10 @@ build bridges, creatures, machines, and small environments. It validates each
 design change, runs the simulation, records the result, and lets you replay and
 compare attempts.
 
-Try the [recorded bridge replay](https://github.com/oney-erge/AgentGymnasium/releases/download/preview-0.1.2/agentgymnasium-recorded-example.html):
-download the HTML file and open it in a browser. An [experimental Windows x64
-portable download](https://github.com/oney-erge/AgentGymnasium/releases/tag/preview-0.1.2)
-is also available; it has not yet been tested on a clean machine.
+Try the [recorded bridge replay](https://oney-physics-replays.hazycow18.chatgpt.site/agentgymnasium.html)
+in your browser. [Experimental portable downloads](https://github.com/oney-erge/AgentGymnasium/releases/tag/preview-0.1.2-cross-platform)
+are available for Windows x64, Linux x86-64, and macOS Intel or Apple Silicon;
+they have not yet been tested on clean machines.
 
 ```text
 Choose a challenge -> agent designs -> physics tests -> replay -> score -> next attempt

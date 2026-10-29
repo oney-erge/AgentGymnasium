@@ -155,5 +155,31 @@ provider seed for a matched comparison; modifying task, tools, or constraints
 creates a different experiment even if its project name still mentions the pack.
 The provider seed is a request to the endpoint, not a guarantee of repeatability.
 
+### Establishing reference results
+
+The mock agent contains candidate bridge and sorter designs, but a candidate is
+not an established solution. To collect evidence for each case, first start the
+local server, then run the following from the repository root:
+
+```bash
+mkdir -p runs/starter-reference-v1
+for case in bridge_builder-light bridge_builder-standard bridge_builder-strong \
+            sorter-light sorter-standard sorter-strong; do
+  curl -fsS "http://127.0.0.1:8765/api/challenge-pack/$case" \
+    -o "runs/starter-reference-v1/$case.json"
+  uv run agentgymnasium run --config "runs/starter-reference-v1/$case.json" --seed 7 \
+    > "runs/starter-reference-v1/$case-result.json"
+done
+```
+
+The script requests the built-in mock provider and runs six simulations; it is
+not a model evaluation. Retain each resolved configuration, run output, saved
+trace, scorecard, tool calls, source revision, Python and physics-engine versions,
+and benchmark fingerprint. Inspect the replay and tool errors as well as the
+score. Repeat on the intended supported platforms before publishing expected
+outcomes or tolerances. An unsuccessful case is evidence to investigate, not a
+successful reference solution. Historical recordings made with other budgets
+and configurations are not results for this pack.
+
 Experiment records live under `runs/experiments/`; ordinary run data is indexed
 in `runs/agentgymnasium.db` and stored under `runs/<trace_run_id>/`.
