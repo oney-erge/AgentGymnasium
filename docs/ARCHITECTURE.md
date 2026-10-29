@@ -1,6 +1,6 @@
 # Architecture
 
-AgentGymnasium is a setup-first loop: you configure a run, an LLM agent builds a
+AgentGymnasium is an experiment loop: you choose or configure a run, an agent builds a
 design by emitting **validated tool calls**, a physics engine simulates it into
 an engine-neutral **trace**, the trace is scored by a named **reward**, and the
 Studio replays the trace while streaming live events. This document maps the
@@ -126,11 +126,13 @@ mutating the design.
 
 ### Constraint honesty
 
-`LaunchConfig.constraints` `max_parts` / `max_joints` / `max_motors` are enforced
-at the chokepoint. `energy_budget`, `material_budget`, `collision_safety`,
-`world_bounds`, and `world.seed` are **configurable but not yet enforced** — the
-Setup UI badges them "soon" / "coming soon" so they don't imply control the engine
-doesn't have.
+The tool chokepoint enforces part, joint, motor and material limits, enforced
+world bounds, and the strict spawn-collision preflight. Scoring applies the
+material, estimated energy, and world-bounds constraints. The energy figure is
+an estimate, not measured joules; spawn overlap checks do not predict future
+collisions. A legacy `world.seed` supplies provider sampling and cosmetic seeds
+unless their explicit overrides are set. It does not randomize physical task
+parameters, and a remote provider may ignore its sampling seed.
 
 ## Scoring
 

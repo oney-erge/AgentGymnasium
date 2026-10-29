@@ -6,6 +6,7 @@ from fastapi.responses import PlainTextResponse, Response
 from agentgymnasium.services.export_service import (
     export_design,
     export_package,
+    export_replay,
     export_report,
     export_scorecard,
     export_trace,
@@ -69,8 +70,21 @@ async def get_report_export(run_id: str) -> PlainTextResponse:
 
 
 @router.get("/{run_id}/package")
-async def get_package_export(run_id: str) -> Response:
-    content = export_package(run_id)
+async def get_package_export(run_id: str, include_interactions: bool = False) -> Response:
+    content = export_package(run_id, include_interactions=include_interactions)
     if content is None:
         raise HTTPException(status_code=404, detail=f"Run not found: {run_id}")
     return _binary_attachment(content, "application/zip", f"agentgymnasium_{run_id}.zip")
+
+
+@router.get("/{run_id}/replay")
+async def get_replay_export(run_id: str) -> PlainTextResponse:
+    try:
+        content = export_replay(run_id)
+    except OSError as exc:
+        raise HTTPException(
+            status_code=503, detail="Offline replay assets are not installed"
+        ) from exc
+    if content is None:
+        raise HTTPException(status_code=404, detail=f"Run not found: {run_id}")
+    return _attachment(content, "text/html", f"agentgymnasium_replay_{run_id}.html")

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import pathlib
+import re
 import zipfile
 from io import BytesIO
 
@@ -134,7 +135,33 @@ def export_report(run_id: str) -> str | None:
     return "\n".join(lines)
 
 
-def export_package(run_id: str) -> bytes | None:
+def export_replay(run_id: str) -> str | None:
+    """Embed recorded data and the existing renderer in an offline HTML page."""
+    trace = get_trace(run_id)
+    if trace is None:
+        return None
+    assets = pathlib.Path(__file__).resolve().parent.parent / "static" / "replay"
+    script = (assets / "replay.js").read_text(encoding="utf-8")
+    style = (assets / "replay.css").read_text(encoding="utf-8")
+    score = get_score(run_id)
+    payload = json.dumps(
+        {
+            "trace": trace.model_dump(mode="json"),
+            "score": score.model_dump(mode="json") if score else None,
+        }
+    ).replace("<", "\\u003c")
+    # Do not let a literal HTML closing tag in a bundled string terminate the script element.
+    script = re.sub(r"</script", lambda _: r"<\/script", script, flags=re.IGNORECASE)
+    return (
+        '<!doctype html><html><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        f"<title>AgentGymnasium replay</title><style>{style}</style></head>"
+        f'<body><div id="root"></div><script>window.AGENTGYMNASIUM_REPLAY={payload};</script>'
+        f"<script>{script}</script></body></html>"
+    )
+
+
+def export_package(run_id: str, *, include_interactions: bool = False) -> bytes | None:
     """Build a zip of backend-persisted artifacts for a run."""
     if get_trace(run_id) is None:
         return None
@@ -154,6 +181,12 @@ def export_package(run_id: str) -> bytes | None:
         trace_jsonl = export_trace(run_id, "jsonl")
         if trace_jsonl is not None:
             zf.writestr("trace.jsonl", trace_jsonl)
+        try:
+            replay = export_replay(run_id)
+        except OSError:
+            replay = None  # Source-only builds may not have the optional replay bundle.
+        if replay is not None:
+            zf.writestr("replay.html", replay)
         score = export_scorecard(run_id)
         if score is not None:
             zf.writestr("score.json", score)
@@ -168,7 +201,7 @@ def export_package(run_id: str) -> bytes | None:
         if toolcalls_path.exists():
             zf.write(toolcalls_path, "toolcalls.jsonl")
         interactions_path = run_dir / "model_interactions.json"
-        if interactions_path.exists():
+        if include_interactions and interactions_path.exists():
             zf.write(interactions_path, "model_interactions.json")
         for name in ("launch_config.json", "launch_provenance.json"):
             artifact = run_dir / name

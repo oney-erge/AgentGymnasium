@@ -32,8 +32,8 @@ export function TopBar({ projectName = 'AgentGymnasium', status = 'connecting' }
       {/* Left: wordmark (→ home/setup) + project */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
         <Link
-          to="/setup"
-          title="Back to Simulation Setup"
+          to="/"
+          title="Back to challenges"
           style={{
             color: 'var(--accent)',
             fontWeight: 700,

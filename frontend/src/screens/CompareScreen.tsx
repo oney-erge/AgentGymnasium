@@ -24,6 +24,7 @@ export function CompareScreen() {
   const [runInput, setRunInput] = useState(initial)
   const [runs, setRuns] = useState<ComparedRun[]>([])
   const [progress, setProgress] = useState(0)
+  const [alignment, setAlignment] = useState<'time' | 'duration'>('time')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -63,10 +64,36 @@ export function CompareScreen() {
     }
   }
 
-  const frameIndices = useMemo(
-    () => runs.map((run) => Math.round(progress * Math.max(0, run.trace.frames.length - 1))),
-    [progress, runs],
+  const maxTime = useMemo(
+    () => Math.max(0, ...runs.map((run) => run.trace.frames.at(-1)?.t ?? 0)),
+    [runs],
   )
+  const frameIndices = useMemo(() => runs.map((run) => {
+    const frames = run.trace.frames
+    if (alignment === 'duration') return Math.round(progress * Math.max(0, frames.length - 1))
+    const time = progress * maxTime
+    // Use the last recorded frame at or before the shared time. A shorter run
+    // remains at its final frame rather than advancing faster than its peers.
+    let low = 0
+    let high = frames.length - 1
+    while (low < high) {
+      const mid = Math.ceil((low + high) / 2)
+      if (frames[mid].t <= time) low = mid
+      else high = mid - 1
+    }
+    return Math.max(0, low)
+  }), [alignment, maxTime, progress, runs])
+
+  const comparisonConditions = runs.map(({ config }) => {
+    const { visual_style: _visualStyle, visual_seed: _visualSeed, seed: _seed, ...world } = config.config.world
+    return JSON.stringify({
+      scenario: config.config.scenario,
+      world,
+      constraints: config.config.constraints,
+      tools: [...(config.config.tools?.enabled ?? [])].sort(),
+    })
+  })
+  const conditionsDiffer = new Set(comparisonConditions).size > 1
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -86,7 +113,13 @@ export function CompareScreen() {
       {runs.length > 0 && (
         <>
           <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={muted()}>Synchronized replay</span>
+            <label style={muted()}>
+              Alignment{' '}
+              <select value={alignment} onChange={(e) => setAlignment(e.target.value as 'time' | 'duration')} style={input()}>
+                <option value="time">Simulation time</option>
+                <option value="duration">Percent of each run</option>
+              </select>
+            </label>
             <input
               type="range"
               min={0}
@@ -95,8 +128,13 @@ export function CompareScreen() {
               onChange={(e) => setProgress(Number(e.target.value) / 1000)}
               style={{ flex: 1 }}
             />
-            <span style={muted()}>{(progress * 100).toFixed(0)}%</span>
+            <span style={muted()}>{alignment === 'time' ? `${(progress * maxTime).toFixed(2)} s` : `${(progress * 100).toFixed(0)}%`}</span>
           </div>
+          {conditionsDiffer && (
+            <div role="alert" style={{ padding: '0 16px 10px', color: 'var(--warn)', fontSize: 12 }}>
+              Challenge, world, tools, or constraints differ. Scores may not be directly comparable.
+            </div>
+          )}
           <div
             style={{
               flex: 1,
@@ -123,8 +161,12 @@ export function CompareScreen() {
                   <div>
                     <h2 style={{ fontSize: 14 }}>{agent?.model ?? run.id}</h2>
                     <p style={muted()}>
-                      {agent?.provider ?? '—'} · seed {run.config.config.world.seed ?? '—'} ·{' '}
+                      {agent?.provider ?? '—'} · provider seed {agent?.provider_seed ?? run.config.config.world.seed ?? '—'} ·{' '}
                       <Link to={`/studio/${run.id}`} style={{ color: 'var(--accent)' }}>open Studio</Link>
+                    </p>
+                    <p style={muted()}>
+                      {run.config.config.scenario.preset} · {run.config.config.world.template} · {run.trace.engine}
+                      {' '}· {run.trace.frames.at(-1)?.t.toFixed(2) ?? '0.00'} s
                     </p>
                   </div>
                   <div style={{ height: 260, borderRadius: 6, overflow: 'hidden' }}>

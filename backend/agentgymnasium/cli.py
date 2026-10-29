@@ -56,6 +56,8 @@ async def _headless_run(config_path: str, seed: int | None) -> dict:
     config = LaunchConfig.model_validate(_read_data(config_path))
     if seed is not None:
         config.world.seed = seed
+        for agent in config.agents.participants:
+            agent.provider_seed = seed
     validation = await validate_launch_config(config)
     if validation.state != LaunchState.ready:
         raise ValueError(

@@ -23,6 +23,7 @@ under `docs/archive/`; shipped details are in `IMPROVEMENTS.md`.
 | Medium | The scheduler is sequential only. | Resource-aware workers with per-endpoint concurrency/rate limits while preserving paired scheduling and deterministic local runs. |
 | Medium | Model capability negotiation is shallow. | Detect native-tool, seed, usage, streaming, and structured-output support per endpoint; persist negotiated capability/version metadata. |
 | Medium | No canonical benchmark suite spans simulation and embodiment. | Versioned task packs with golden mock traces, normalized scores, fixed tool contracts, calibration metadata, and a release process. |
+| Medium | The starter physics pack varies gravity but has no validated reference solutions, held-out task distribution, or automated multi-task evaluation. | Validate solvability and baselines, add meaningful physical variants, and report task-specific results and budgets. |
 
 ## Simulation and sim-to-real
 

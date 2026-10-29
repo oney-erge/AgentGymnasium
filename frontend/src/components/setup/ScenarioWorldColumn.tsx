@@ -614,7 +614,7 @@ export function ScenarioWorldColumn({ config, onConfigChange }: ScenarioWorldCol
 
       {advancedOpen && (
         <div style={{ marginTop: 6 }}>
-          <FieldRow label="Seed">
+          <FieldRow label="Legacy seed">
             <input
               type="number"
               value={world?.seed ?? ''}
@@ -626,9 +626,17 @@ export function ScenarioWorldColumn({ config, onConfigChange }: ScenarioWorldCol
               style={inputStyle()}
             />
           </FieldRow>
+          <FieldRow label="Visual seed">
+            <input
+              type="number"
+              value={world?.visual_seed ?? ''}
+              onChange={(e) => handleWorldField({ visual_seed: e.target.value === '' ? null : Number(e.target.value) })}
+              style={inputStyle()}
+            />
+          </FieldRow>
           <div style={{ fontSize: 10, color: 'var(--text-2)', marginTop: 4, lineHeight: 1.4 }}>
-            Seed varies LLM sampling only — the physics engine is already
-            deterministic, so replays are exact regardless of seed.
+            The legacy seed supplies the provider and visual seed when their overrides are blank.
+            It does not generate different physical challenge instances, and providers may ignore it.
           </div>
         </div>
       )}

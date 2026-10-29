@@ -553,6 +553,11 @@ function AgentCard({
                 style={{ width: '100%', accentColor: 'var(--accent)' }}
               />
             </Field>
+            <Field label="Provider seed (optional)">
+              <input type="number" value={agent.provider_seed ?? ''}
+                onChange={(e) => onChange({ provider_seed: e.target.value === '' ? null : Number(e.target.value) })}
+                style={{ width: '100%' }} />
+            </Field>
             <Field label="Memory">
               <select
                 value={agent.memory_mode ?? 'episodic'}

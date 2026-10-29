@@ -2,7 +2,7 @@
 
 # AgentGymnasium
 
-**Give an AI agent a physics challenge, replay what it did, and measure whether it improved.**
+**Watch an agent solve a physics challenge, inspect its changes, and compare results.**
 
 [![CI](https://github.com/oney-erge/AgentGymnasium/actions/workflows/ci.yml/badge.svg)](https://github.com/oney-erge/AgentGymnasium/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
@@ -32,11 +32,11 @@ cd AgentGymnasium
 ```
 
 On Windows, use `.\run.bat`. The launcher installs dependencies and opens the
-Studio at **http://localhost:8765**. The first run takes a minute or two;
-later starts take seconds. Node is not needed unless you change the frontend.
+challenge screen at **http://localhost:8765**. Node is not needed unless you
+change the frontend.
 
-Start with the offline `mock` provider. It runs the complete loop with
-scripted tool calls and needs neither a model nor an API key. For a real model,
+Choose a bridge or sorter case and **Run offline example**. It uses scripted
+tool calls and needs neither a model nor an API key. For a real model,
 connect [LocalDeploy](https://github.com/oney-erge/LocalDeploy) or another
 OpenAI-compatible endpoint; see [provider setup](docs/GETTING_STARTED.md#openai-api-key).
 For a repeatable, model-free comparison, run the [versioned bridge example](docs/EXPERIMENTS.md#headless-sweep).
@@ -45,7 +45,8 @@ Its mock results demonstrate the pipeline, not model intelligence.
 ## What you can do
 
 - Build and replay agent attempts in the Simulation Studio, then compare up to
-  four replays side by side.
+  four replays side by side by simulation time. Download a recorded replay as
+  a standalone HTML file or export the underlying run artifacts.
 - Run repeatable model, seed, and prompt experiments with recorded prompts,
   latency, token usage, configuration, benchmark fingerprints, and scores.
 - Inspect a durable history of attempts, construction steps, physics traces,
@@ -68,6 +69,9 @@ AgentGymnasium is an evaluation and simulation environment, not a certified
 robot safety controller. The default 2D simulation runs locally on the CPU and
 does not require a GPU. A real ROS 2 gateway must independently enforce local
 watchdogs, actuator limits, collision avoidance, and an emergency stop.
+Model requests currently contain text and tools; the rendered replay is for the
+human observer. The starter challenge pack is experimental and does not yet
+provide validated reference solutions.
 
 The standard launchers also provide `doctor`, `repair`, `docker`, `logs`,
 and `stop`. Docker binds the UI to loopback and persists run data in a named

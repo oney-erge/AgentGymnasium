@@ -52,6 +52,22 @@ export function ReplayTimeline({
   const ticks = hasFrames
     ? Array.from({ length: TICK_COUNT }, (_, i) => (totalTime * i) / (TICK_COUNT - 1))
     : []
+  const eventLabels: Record<string, string> = {
+    contact_started: 'First contact',
+    structure_stressed: 'Stress detected',
+    body_destroyed: 'Body lost',
+    goal_reached: 'Goal reached',
+    object_sorted: 'Object sorted',
+  }
+  const seen = new Set<string>()
+  const moments: { index: number; time: number; label: string }[] = []
+  frames?.forEach((frame, index) => frame.events?.forEach((event) => {
+    const label = eventLabels[event.type]
+    if (label && !seen.has(event.type)) {
+      seen.add(event.type)
+      moments.push({ index, time: frame.t, label })
+    }
+  }))
 
   return (
     <div>
@@ -169,6 +185,17 @@ export function ReplayTimeline({
                 </button>
               )
             })}
+          </div>
+        )}
+
+        {moments.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }} aria-label="Recorded events">
+            {moments.map((moment) => (
+              <button key={moment.label} onClick={() => onSeek(moment.index)}
+                style={{ padding: '4px 6px', color: 'var(--text-1)', background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: 4, fontSize: 10 }}>
+                {moment.label} · {moment.time.toFixed(1)}s
+              </button>
+            ))}
           </div>
         )}
 

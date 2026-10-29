@@ -376,10 +376,14 @@ def _benchmark_hash(
 ) -> str:
     """Fingerprint the task/world/tool contract used for a comparable trial."""
     world_template = get_world_template(config.world.template)
+    world = config.world.model_dump(mode="json")
+    for cosmetic_or_sampling in ("seed", "visual_seed", "visual_style"):
+        world.pop(cosmetic_or_sampling, None)
     payload = {
         "scenario": config.scenario.model_dump(mode="json"),
         "preset": preset.model_dump(mode="json") if preset is not None else None,
-        "world": config.world.model_dump(mode="json"),
+        "world": world,
+        "constraints": config.constraints.model_dump(mode="json"),
         "world_template": (
             world_template.model_dump(mode="json")
             if world_template is not None
@@ -782,7 +786,7 @@ async def run_agent_attempt(
                 endpoint_url=agent.endpoint_url or config.llm_connection.endpoint_url,
                 api_key=agent.api_key or config.llm_connection.api_key,
                 temperature=agent.temperature,
-                seed=config.world.seed,
+                seed=agent.provider_seed if agent.provider_seed is not None else config.world.seed,
                 tools=_provider_tools(enabled_defs),
             )
         )
@@ -792,7 +796,7 @@ async def run_agent_attempt(
                 agent_id=agent.id,
                 system=system_prompt,
                 user=turn_user,
-                seed=config.world.seed,
+                seed=agent.provider_seed if agent.provider_seed is not None else config.world.seed,
                 result=model_result,
             )
         )
@@ -894,7 +898,7 @@ async def run_agent_attempt(
             mode=config.agents.mode.value,
             provider=agent.provider.value,
             model=agent.model,
-            seed=config.world.seed,
+            seed=agent.provider_seed if agent.provider_seed is not None else config.world.seed,
             input_tokens=sum(
                 item.result.usage.input_tokens for item in model_interactions
             ),
@@ -1053,7 +1057,7 @@ async def run_cooperative_attempt(
                 endpoint_url=agent.endpoint_url or config.llm_connection.endpoint_url,
                 api_key=agent.api_key or config.llm_connection.api_key,
                 temperature=agent.temperature,
-                seed=config.world.seed,
+                seed=agent.provider_seed if agent.provider_seed is not None else config.world.seed,
                 tools=_provider_tools(enabled_defs),
             )
         )
@@ -1063,7 +1067,7 @@ async def run_cooperative_attempt(
                 agent_id=agent.id,
                 system=system_prompt,
                 user=user_prompt,
-                seed=config.world.seed,
+                seed=agent.provider_seed if agent.provider_seed is not None else config.world.seed,
                 result=model_result,
             )
         )

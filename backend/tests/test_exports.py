@@ -96,6 +96,31 @@ def test_export_package_zip():
         assert json.loads(zf.read("build_snapshots.json").decode("utf-8")) == []
 
 
+def test_package_includes_model_interactions_only_on_request(tmp_path, monkeypatch):
+    from agentgymnasium.services import export_service
+
+    run_id = _make_run()
+    run_dir = tmp_path / run_id
+    run_dir.mkdir()
+    (run_dir / "model_interactions.json").write_text('[{"user":"private prompt"}]')
+    monkeypatch.setattr(export_service, "_RUNS_DIR", tmp_path)
+    default = client.get(f"/api/exports/{run_id}/package")
+    included = client.get(f"/api/exports/{run_id}/package?include_interactions=true")
+    with zipfile.ZipFile(BytesIO(default.content)) as zf:
+        assert "model_interactions.json" not in zf.namelist()
+    with zipfile.ZipFile(BytesIO(included.content)) as zf:
+        assert "private prompt" in zf.read("model_interactions.json").decode()
+
+
+def test_offline_replay_contains_recorded_trace_and_no_external_script():
+    run_id = _make_run()
+    response = client.get(f"/api/exports/{run_id}/replay")
+    assert response.status_code == 200
+    assert "window.AGENTGYMNASIUM_REPLAY=" in response.text
+    assert run_id in response.text
+    assert "<script src=" not in response.text
+
+
 def test_export_unknown_run_404():
     for path in ("design", "trace", "scorecard", "report", "package"):
         r = client.get(f"/api/exports/does-not-exist/{path}")

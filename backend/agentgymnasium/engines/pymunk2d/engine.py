@@ -48,7 +48,7 @@ class Pymunk2DEngine(EngineAdapter):
             engine=self.name,
             terrain=getattr(world.terrain, "value", str(world.terrain)),
             visual_style=getattr(world.visual_style, "value", str(world.visual_style)),
-            visual_seed=world.seed or 0,
+            visual_seed=world.resolved_visual_seed or 0,
             dt=dt,
             kill_y=design.metadata.get("kill_y"),
             world_static=self._build_static(design, world),
@@ -63,8 +63,8 @@ class Pymunk2DEngine(EngineAdapter):
                     created_by=spec.created_by,
                     visual=VisualSpec(
                         material=spec.material,
-                        seed=stable_visual_seed(world.seed, spec.id),
-                        variant=f"v{stable_visual_seed(world.seed, spec.id) % 4}",
+                        seed=stable_visual_seed(world.resolved_visual_seed, spec.id),
+                        variant=f"v{stable_visual_seed(world.resolved_visual_seed, spec.id) % 4}",
                         label=spec.kind,
                     ),
                 )
@@ -301,8 +301,8 @@ class Pymunk2DEngine(EngineAdapter):
                         created_by=spec.created_by,
                         visual=VisualSpec(
                             material=spec.material,
-                            seed=stable_visual_seed(world.seed, spec.id),
-                            variant=f"v{stable_visual_seed(world.seed, spec.id) % 4}",
+                            seed=stable_visual_seed(world.resolved_visual_seed, spec.id),
+                            variant=f"v{stable_visual_seed(world.resolved_visual_seed, spec.id) % 4}",
                             label=spec.kind,
                         ),
                     )

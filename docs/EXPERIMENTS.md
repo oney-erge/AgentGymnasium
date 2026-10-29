@@ -11,13 +11,16 @@ An experiment combines:
 
 - one immutable base `LaunchConfig`;
 - one or more provider/model variants;
-- paired world/model seeds;
+- paired provider sampling seeds;
 - one or more repeats.
 
 The scheduler applies only the selected model variant and seed to each copied
 base config. This keeps the task, world, tools, attempt budget, constraints, and
-reward identical across models. A benchmark fingerprint derived from the
-scenario, preset, world template, and tool schemas is stored with every run.
+reward identical across models. The cosmetic seed defaults to 0 for experiment
+cells unless explicitly set. The legacy world seed remains recorded for older
+consumers; it does not generate a different physical task. The fingerprint covers
+the scenario, preset, world, constraints, and tool schemas, excluding sampling and
+cosmetic seeds. Fingerprints from older releases used a different definition.
 
 Experiments are intentionally bounded to 120 cells and run sequentially. That
 keeps local endpoints and laptops usable and avoids changing results through
@@ -125,9 +128,32 @@ from launch/experiment artifacts.
 ## Inspecting evidence
 
 Use History to select two to four attempt trace ids and open Compare. Compare
-normalizes replay progress across different trace lengths and shows score
+aligns recorded simulation time by default, with an optional normalized-duration
+mode. It warns when challenge, world, tools, or constraints differ and shows score
 metrics, provider/model/seed, tokens, latency, and tool-call protocol side by
 side. Studio's Model Inspector exposes each persisted prompt/result turn.
+
+Studio can download a standalone recorded replay or a run package. The package
+omits the model interaction log by default; choose the explicit option to include
+it. Other artifacts, including custom task text, configuration, and tool calls,
+can also contain sensitive information, so inspect them before sharing.
+
+## Starter physics cases
+
+The experimental `starter-physics-v1` pack contains bridge and sorter cases at
+three fixed gravity values. The home screen can run each case with the scripted
+mock provider or open its configuration for a model. These are documented
+physical instances, not validated reference solutions or a general leaderboard.
+Each case uses one attempt, a 60-second simulation budget, and the default tools
+except `set_gravity`, so the agent cannot change the case gravity through that
+tool. Launch configuration and the fingerprint are saved with each run.
+
+`GET /api/challenge-pack` lists the cases and `GET /api/challenge-pack/{case_id}`
+returns the resolved starting configuration. You can save the returned JSON and
+use `agentgymnasium run --config <path>`. Change only the provider/model and
+provider seed for a matched comparison; modifying task, tools, or constraints
+creates a different experiment even if its project name still mentions the pack.
+The provider seed is a request to the endpoint, not a guarantee of repeatability.
 
 Experiment records live under `runs/experiments/`; ordinary run data is indexed
 in `runs/agentgymnasium.db` and stored under `runs/<trace_run_id>/`.

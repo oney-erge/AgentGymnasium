@@ -226,6 +226,8 @@ export function StudioScreen() {
   }
   const handleSeek = (index: number) => {
     followLiveRef.current = false
+    setPlaying(false)
+    setViewMode('physics')
     setFrameIndex(index)
   }
 
@@ -954,6 +956,16 @@ export function StudioScreen() {
             videoExporting={videoExporting}
             videoMessage={videoMessage}
           />
+          {trace?.run_id && (
+            <div style={{ display: 'grid', gap: 6 }}>
+              <button onClick={() => downloadUrl(`/exports/${trace.run_id}/replay`)}>Download offline replay</button>
+              <button onClick={() => downloadUrl(`/exports/${trace.run_id}/package`)}>Download run package</button>
+              <button onClick={() => downloadUrl(`/exports/${trace.run_id}/package?include_interactions=true`)}>Package with model interactions</button>
+              <p style={{ color: 'var(--text-2)', fontSize: 10 }}>
+                Packages can contain custom task text, configuration, and tool calls. Review before sharing; the model interaction log is included only when requested.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

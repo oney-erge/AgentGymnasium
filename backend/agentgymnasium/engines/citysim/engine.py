@@ -83,7 +83,7 @@ class CityEngine(EngineAdapter):
             camera="iso",
             terrain=getattr(world.terrain, "value", str(world.terrain)),
             visual_style=getattr(world.visual_style, "value", str(world.visual_style)),
-            visual_seed=world.seed or 0,
+            visual_seed=world.resolved_visual_seed or 0,
             dt=_TICK_SECONDS,
             kill_y=None,
             world_static=self._build_static(design, world),
@@ -166,8 +166,8 @@ class CityEngine(EngineAdapter):
                         # keep their semantic palette unless the design chose a
                         # more meaningful material explicitly.
                         material=None if spec.material == "metal" else spec.material,
-                        seed=stable_visual_seed(world.seed, spec.id),
-                        variant=f"v{stable_visual_seed(world.seed, spec.id) % 4}",
+                        seed=stable_visual_seed(world.resolved_visual_seed, spec.id),
+                        variant=f"v{stable_visual_seed(world.resolved_visual_seed, spec.id) % 4}",
                         label=spec.kind,
                     ),
                 )

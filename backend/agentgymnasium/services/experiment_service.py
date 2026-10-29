@@ -239,7 +239,10 @@ class ExperimentManager:
         agent.endpoint_url = variant.endpoint_url
         agent.api_key = variant.api_key
         agent.temperature = variant.temperature
+        agent.provider_seed = cell.seed
         config.world.seed = cell.seed
+        if config.world.visual_seed is None:
+            config.world.visual_seed = 0
         config.project_name = f"{record.spec.name} · {variant.label} · seed {cell.seed}"
 
         cell.status = CellStatus.running

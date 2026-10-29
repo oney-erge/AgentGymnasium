@@ -106,6 +106,7 @@ class AgentConfig(BaseModel):
     endpoint_url: str | None = None
     api_key: str | None = None
     temperature: float = 0.7
+    provider_seed: int | None = None  # Overrides the legacy world seed for this provider.
     max_attempts: int = 50
     context_window: str = "8k"
     memory_mode: MemoryMode = MemoryMode.none
@@ -134,6 +135,11 @@ class WorldConfig(BaseModel):
     active_physics_zones: int = 1
     visual_style: VisualStyle = VisualStyle.realistic
     seed: int | None = None
+    visual_seed: int | None = None  # Defaults to the legacy seed when omitted.
+
+    @property
+    def resolved_visual_seed(self) -> int | None:
+        return self.visual_seed if self.visual_seed is not None else self.seed
 
 
 class AgentsConfig(BaseModel):

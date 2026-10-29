@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from agentgymnasium.core.schemas.challenge import ScenarioPreset, WorldTemplate
 from agentgymnasium.core.schemas.setup import LaunchConfig
+from agentgymnasium.services.challenge_pack import case_config, list_cases
 from agentgymnasium.services.preset_service import (
     get_scenario_preset,
     get_world_template,
@@ -16,6 +17,19 @@ from agentgymnasium.services.preset_service import (
 )
 
 router = APIRouter(prefix="/api", tags=["presets"])
+
+
+@router.get("/challenge-pack")
+async def get_challenge_pack() -> dict:
+    return list_cases()
+
+
+@router.get("/challenge-pack/{case_id}", response_model=LaunchConfig)
+async def get_challenge_case(case_id: str) -> LaunchConfig:
+    config = case_config(case_id)
+    if config is None:
+        raise HTTPException(status_code=404, detail=f"Challenge case not found: {case_id}")
+    return config
 
 
 class SavePresetRequest(BaseModel):

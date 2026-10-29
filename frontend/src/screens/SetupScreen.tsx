@@ -86,6 +86,7 @@ export function SetupScreen() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const configRunId = searchParams.get('configRunId')
+  const starterCase = searchParams.get('case')
   const [config, setConfig] = useState<Partial<LaunchConfig>>(DEFAULT_CONFIG)
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null)
   const [launching, setLaunching] = useState(false)
@@ -160,6 +161,16 @@ export function SetupScreen() {
 
     async function loadInitialConfig() {
       try {
+        if (starterCase) {
+          const loaded = await api.get<LaunchConfig>(`/challenge-pack/${encodeURIComponent(starterCase)}`)
+          if (cancelled) return
+          lastWorkspaceJsonRef.current = JSON.stringify(loaded)
+          workspaceLoadedRef.current = true
+          setWorkspaceSyncState('external')
+          setWorkspaceSyncMsg('Challenge case loaded; changes are not autosaved')
+          setConfig(loaded)
+          return
+        }
         if (configRunId) {
           const result = await api.get<RunConfigResponse>(`/runs/${configRunId}/config`)
           if (cancelled) return
@@ -201,10 +212,10 @@ export function SetupScreen() {
     return () => {
       cancelled = true
     }
-  }, [configRunId])
+  }, [configRunId, starterCase])
 
   useEffect(() => {
-    if (!workspaceLoadedRef.current) return
+    if (!workspaceLoadedRef.current || starterCase) return
 
     const signature = JSON.stringify(config)
     if (signature === lastWorkspaceJsonRef.current) return
@@ -244,9 +255,10 @@ export function SetupScreen() {
     return () => {
       if (workspaceSaveRef.current) clearTimeout(workspaceSaveRef.current)
     }
-  }, [config])
+  }, [config, starterCase])
 
   useEffect(() => {
+    if (starterCase) return
     const interval = window.setInterval(async () => {
       if (
         !workspaceLoadedRef.current ||
@@ -283,7 +295,7 @@ export function SetupScreen() {
     }, WORKSPACE_SYNC_POLL_MS)
 
     return () => window.clearInterval(interval)
-  }, [])
+  }, [starterCase])
 
   // Debounced validation
   useEffect(() => {

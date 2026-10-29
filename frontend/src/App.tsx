@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { HistoryScreen } from './screens/HistoryScreen'
 import { SetupScreen } from './screens/SetupScreen'
+import { WelcomeScreen } from './screens/WelcomeScreen'
 
 const StudioScreen = lazy(() =>
   import('./screens/StudioScreen').then((module) => ({ default: module.StudioScreen })),
@@ -42,6 +43,7 @@ export default function App() {
     <BrowserRouter>
       <Suspense fallback={<RouteLoading />}>
         <Routes>
+          <Route path="/" element={<WelcomeScreen />} />
           <Route path="/setup" element={<SetupScreen />} />
           <Route path="/studio/:runId" element={<StudioScreen />} />
           <Route path="/history" element={<HistoryScreen />} />
@@ -49,7 +51,7 @@ export default function App() {
           <Route path="/compare" element={<CompareScreen />} />
           <Route path="/physical" element={<PhysicalLabScreen />} />
           <Route path="/visuals" element={<VisualCatalogScreen />} />
-          <Route path="*" element={<Navigate to="/setup" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

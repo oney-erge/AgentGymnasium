@@ -60,6 +60,7 @@ export interface AgentConfig {
   endpoint_url?: string | null
   api_key?: string | null
   temperature?: number
+  provider_seed?: number | null
   max_attempts?: number
   context_window?: string
   memory_mode?: MemoryMode
@@ -103,6 +104,7 @@ export interface WorldConfig {
   active_physics_zones?: number
   visual_style?: VisualStyle
   seed?: number | null
+  visual_seed?: number | null
 }
 
 export interface AgentsConfig {

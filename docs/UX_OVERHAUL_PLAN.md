@@ -1,9 +1,11 @@
 # AgentGymnasium — UX Overhaul Plan (for the LLM / robotics researcher)
 
-**Status:** proposed (2026-07-08). Not yet started.
+**Status:** historical proposal (2026-07-08); many items below have shipped.
+Do not use its original gap statements as a current feature inventory. See
+[`remaining_gaps.md`](remaining_gaps.md) for the active backlog.
 **Goal:** turn AgentGymnasium from a "configure-once, launch-once, watch-once" demo into a
 **reproducible experimentation loop** for someone probing how well LLMs reason about the
-physical world. Read this alongside `docs/COMPREHENSIVE_PLAN.md` (original spec) and
+physical world. Read this alongside `docs/archive/COMPREHENSIVE_PLAN.md` (original spec) and
 `docs/remaining_gaps.md` (deferred items). This plan supersedes none of the architecture
 invariants in `CLAUDE.md` — every item below still routes design mutations through
 `apply_tool_call`, renders only from `EpisodeTrace`, and treats `LaunchConfig` as the
