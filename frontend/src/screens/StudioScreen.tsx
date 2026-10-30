@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { TopBar } from '../components/shared/TopBar'
 import { WorldView, type WorldViewHandle } from '../components/studio/WorldView'
 import { PlaybackToolbar } from '../components/studio/PlaybackToolbar'
@@ -33,6 +33,11 @@ import type {
 
 export function StudioScreen() {
   const { runId } = useParams<{ runId: string }>()
+  const [baselineId, setBaselineId] = useState<string | null>(() => {
+    try { return window.sessionStorage.getItem('agentgymnasium.baselineTrace') }
+    catch { return null }
+  })
+  const [baselineMessage, setBaselineMessage] = useState<string | null>(null)
 
   // ── Playback state (drives the Phaser replay) ──────────────────────────────
   const [trace, setTrace] = useState<EpisodeTrace | null>(null)
@@ -640,6 +645,17 @@ export function StudioScreen() {
       : 'online'
   const activeRunId = runId ?? trace?.run_id ?? null
 
+  function pinDisplayedAttempt() {
+    if (!trace) return
+    setBaselineId(trace.run_id)
+    try {
+      window.sessionStorage.setItem('agentgymnasium.baselineTrace', trace.run_id)
+      setBaselineMessage(`Baseline: ${trace.run_id} (this browser tab)`)
+    } catch {
+      setBaselineMessage('Baseline is available only while this view remains open.')
+    }
+  }
+
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <TopBar projectName={challengeName || 'AgentGymnasium'} status={topBarStatus} />
@@ -649,6 +665,7 @@ export function StudioScreen() {
         style={{
           display: 'flex',
           alignItems: 'center',
+          flexWrap: 'wrap',
           gap: 12,
           padding: '8px 16px',
           borderBottom: '1px solid var(--border)',
@@ -693,6 +710,15 @@ export function StudioScreen() {
             </span>
           )
         })()}
+        <button onClick={pinDisplayedAttempt} disabled={!trace} title="Pin the displayed attempt for comparison in this tab" style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--surface-2)', color: 'var(--text-1)', fontSize: 11 }}>
+          Pin baseline
+        </button>
+        {baselineId && trace && baselineId !== trace.run_id && (
+          <Link to={`/compare?runs=${encodeURIComponent(`${baselineId},${trace.run_id}`)}`} style={{ color: 'var(--accent)', fontSize: 11 }}>
+            Compare with baseline
+          </Link>
+        )}
+        {baselineMessage && <span style={{ fontSize: 11, color: 'var(--text-2)' }}>{baselineMessage}</span>}
         <span style={{ marginLeft: 'auto' }}>
           <RunRelaunchActions runId={activeRunId} compact disabled={!activeRunId} />
         </span>

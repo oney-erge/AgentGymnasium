@@ -60,7 +60,12 @@ function finiteNumber(value: string, fallback: number): number {
   return Number.isFinite(parsed) ? parsed : fallback
 }
 
-export function RunRelaunchActions({
+export function RunRelaunchActions(props: RunRelaunchActionsProps) {
+  // A saved configuration and any pending request belong to exactly one run.
+  return <RunRelaunchForRun key={props.runId ?? ''} {...props} />
+}
+
+function RunRelaunchForRun({
   runId,
   compact = false,
   align = 'right',
@@ -68,6 +73,7 @@ export function RunRelaunchActions({
 }: RunRelaunchActionsProps) {
   const navigate = useNavigate()
   const rootRef = useRef<HTMLDivElement | null>(null)
+  const mountedRef = useRef(true)
   const [busy, setBusy] = useState(false)
   const [loadingConfig, setLoadingConfig] = useState(false)
   const [open, setOpen] = useState(false)
@@ -79,6 +85,11 @@ export function RunRelaunchActions({
     attempts: '50',
   })
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   useEffect(() => {
     if (!open) return
@@ -99,11 +110,11 @@ export function RunRelaunchActions({
         `/runs/${runId}/relaunch`,
         patch ? { patch } : {},
       )
-      navigate(`/studio/${response.run_id}`)
+      if (mountedRef.current) navigate(`/studio/${response.run_id}`)
     } catch (err) {
-      setError(describeApiError(err))
+      if (mountedRef.current) setError(describeApiError(err))
     } finally {
-      setBusy(false)
+      if (mountedRef.current) setBusy(false)
     }
   }
 
@@ -114,14 +125,15 @@ export function RunRelaunchActions({
     setError(null)
     try {
       const response = await api.get<RunConfigResponse>(`/runs/${runId}/config`)
+      if (!mountedRef.current) return null
       setConfig(response.config)
       setValues(valuesFromConfig(response.config))
       return response.config
     } catch (err) {
-      setError(describeApiError(err))
+      if (mountedRef.current) setError(describeApiError(err))
       return null
     } finally {
-      setLoadingConfig(false)
+      if (mountedRef.current) setLoadingConfig(false)
     }
   }
 

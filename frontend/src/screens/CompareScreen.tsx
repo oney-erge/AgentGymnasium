@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import type {
@@ -24,6 +24,8 @@ export function CompareScreen() {
   const [runInput, setRunInput] = useState(initial)
   const [runs, setRuns] = useState<ComparedRun[]>([])
   const [progress, setProgress] = useState(0)
+  const progressRef = useRef(0)
+  const [playing, setPlaying] = useState(false)
   const [alignment, setAlignment] = useState<'time' | 'duration'>('time')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -55,6 +57,8 @@ export function CompareScreen() {
         }),
       )
       setRuns(loaded)
+      setPlaying(false)
+      progressRef.current = 0
       setProgress(0)
       setParams({ runs: ids.join(',') })
     } catch {
@@ -68,6 +72,21 @@ export function CompareScreen() {
     () => Math.max(0, ...runs.map((run) => run.trace.frames.at(-1)?.t ?? 0)),
     [runs],
   )
+  useEffect(() => {
+    if (!playing || maxTime <= 0) return
+    let last = performance.now()
+    let frame = 0
+    const tick = (now: number) => {
+      const next = Math.min(1, progressRef.current + (now - last) / (maxTime * 1000))
+      last = now
+      progressRef.current = next
+      setProgress(next)
+      if (next < 1) frame = requestAnimationFrame(tick)
+      else setPlaying(false)
+    }
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [playing, maxTime])
   const frameIndices = useMemo(() => runs.map((run) => {
     const frames = run.trace.frames
     if (alignment === 'duration') return Math.round(progress * Math.max(0, frames.length - 1))
@@ -85,7 +104,10 @@ export function CompareScreen() {
   }), [alignment, maxTime, progress, runs])
 
   const comparisonConditions = runs.map(({ config }) => {
-    const { visual_style: _visualStyle, visual_seed: _visualSeed, seed: _seed, ...world } = config.config.world
+    const world = { ...config.config.world }
+    delete world.visual_style
+    delete world.visual_seed
+    delete world.seed
     return JSON.stringify({
       scenario: config.config.scenario,
       world,
@@ -113,6 +135,19 @@ export function CompareScreen() {
       {runs.length > 0 && (
         <>
           <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button
+              disabled={maxTime <= 0}
+              onClick={() => {
+                if (!playing && progressRef.current >= 1) {
+                  progressRef.current = 0
+                  setProgress(0)
+                }
+                setPlaying((value) => !value)
+              }}
+              style={primary()}
+            >
+              {playing ? 'Pause' : 'Play'}
+            </button>
             <label style={muted()}>
               Alignment{' '}
               <select value={alignment} onChange={(e) => setAlignment(e.target.value as 'time' | 'duration')} style={input()}>
@@ -125,7 +160,10 @@ export function CompareScreen() {
               min={0}
               max={1000}
               value={Math.round(progress * 1000)}
-              onChange={(e) => setProgress(Number(e.target.value) / 1000)}
+              onChange={(e) => {
+                progressRef.current = Number(e.target.value) / 1000
+                setProgress(progressRef.current)
+              }}
               style={{ flex: 1 }}
             />
             <span style={muted()}>{alignment === 'time' ? `${(progress * maxTime).toFixed(2)} s` : `${(progress * 100).toFixed(0)}%`}</span>
@@ -159,7 +197,7 @@ export function CompareScreen() {
               return (
                 <section key={run.id} style={panel()}>
                   <div>
-                    <h2 style={{ fontSize: 14 }}>{agent?.model ?? run.id}</h2>
+                    <h2 style={{ fontSize: 14 }}>{String.fromCharCode(65 + index)} · {agent?.model ?? run.id}</h2>
                     <p style={muted()}>
                       {agent?.provider ?? '—'} · provider seed {agent?.provider_seed ?? run.config.config.world.seed ?? '—'} ·{' '}
                       <Link to={`/studio/${run.id}`} style={{ color: 'var(--accent)' }}>open Studio</Link>

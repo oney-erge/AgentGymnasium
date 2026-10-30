@@ -36,6 +36,17 @@ def test_serve_custom_host_port():
     assert args.port == 9000
 
 
+def test_open_waits_for_health_on_the_selected_bind_address(monkeypatch):
+    from agentgymnasium import cli
+
+    opened = []
+    monkeypatch.setattr(cli, "_port_in_use", lambda *_: False)
+    monkeypatch.setattr(cli, "_open_when_ready", lambda url, health: opened.append((url, health)))
+    monkeypatch.setattr(cli.uvicorn, "run", lambda *args, **kwargs: None)
+    cli.main(["serve", "--host", "192.0.2.8", "--port", "9000", "--open"])
+    assert opened == [("http://192.0.2.8:9000", "http://192.0.2.8:9000/api/health")]
+
+
 def test_port_in_use_detection():
     # A free, unbound port is not in use.
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:

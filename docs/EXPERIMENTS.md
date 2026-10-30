@@ -135,6 +135,10 @@ aligns recorded simulation time by default, with an optional normalized-duration
 mode. It warns when challenge, world, tools, or constraints differ and shows score
 metrics, provider/model/seed, tokens, latency, and tool-call protocol side by
 side. Studio's Model Inspector exposes each persisted prompt/result turn.
+In Studio, **Pin baseline** remembers the displayed attempt in the current browser
+tab. Open another attempt and choose **Compare with baseline**; Compare can play,
+pause, or scrub the recordings together. The pin is tab-scoped, and the comparison
+URL refers to local saved run IDs rather than sharing the run data itself.
 
 Studio can download a standalone recorded replay or a run package. The package
 omits the model interaction log by default; choose the explicit option to include

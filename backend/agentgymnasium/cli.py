@@ -171,8 +171,9 @@ def main(argv: list[str] | None = None) -> None:
 
         if getattr(args, "open_browser", False):
             shown = "localhost" if host in ("127.0.0.1", "0.0.0.0") else host
+            probe_host = "127.0.0.1" if host in ("0.0.0.0", "") else host
             _open_when_ready(
-                f"http://{shown}:{port}", f"http://127.0.0.1:{port}/api/health"
+                f"http://{shown}:{port}", f"http://{probe_host}:{port}/api/health"
             )
         uvicorn.run("agentgymnasium.app:app", host=host, port=port, reload=reload)
     elif args.command == "run":

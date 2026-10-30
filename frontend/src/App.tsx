@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { HistoryScreen } from './screens/HistoryScreen'
 import { SetupScreen } from './screens/SetupScreen'
 import { WelcomeScreen } from './screens/WelcomeScreen'
@@ -38,6 +38,12 @@ function RouteLoading() {
   )
 }
 
+function StudioRoute() {
+  const { runId } = useParams<{ runId: string }>()
+  // Studio owns live data, attempt history and playback for one launch.
+  return <StudioScreen key={runId} />
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -45,7 +51,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<WelcomeScreen />} />
           <Route path="/setup" element={<SetupScreen />} />
-          <Route path="/studio/:runId" element={<StudioScreen />} />
+          <Route path="/studio/:runId" element={<StudioRoute />} />
           <Route path="/history" element={<HistoryScreen />} />
           <Route path="/experiments" element={<ExperimentsScreen />} />
           <Route path="/compare" element={<CompareScreen />} />
