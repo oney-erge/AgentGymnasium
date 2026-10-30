@@ -20,11 +20,10 @@ design change, runs the simulation, records the result, and lets you replay and
 compare attempts.
 
 Try the [recorded bridge replay](https://oney-physics-replays.hazycow18.chatgpt.site/agentgymnasium.html)
-in your browser. [Experimental portable downloads](https://github.com/oney-erge/AgentGymnasium/releases/tag/preview-0.1.2-cross-platform)
-are available for Windows x64, Linux x86-64, and macOS Intel or Apple Silicon;
-they have not yet been tested on clean machines.
-These previews contain an earlier snapshot; use a current checkout for the latest rerun and
-startup fixes.
+in your browser. An [experimental Windows x64 preview](https://github.com/oney-erge/AgentGymnasium/releases/tag/preview-windows-2026-10-30)
+contains the latest comparison changes. [Older previews](https://github.com/oney-erge/AgentGymnasium/releases/tag/preview-0.1.2-cross-platform)
+are also available for Linux and macOS. These archives are unsigned and have not
+been run on clean machines.
 
 ```text
 Choose a challenge -> agent designs -> physics tests -> replay -> score -> next attempt
@@ -99,6 +98,7 @@ before upgrading an existing installation.
 | [Experiments](docs/EXPERIMENTS.md) | Reproducible model matrices, statistics, and artifacts |
 | [Embodiment](docs/EMBODIMENT.md) | Mock and ROS 2 adapters, safety state, and gateway contract |
 | [Examples](docs/examples/) | Exported reports and scorecards |
+| [Portable preview notes](docs/RELEASING.md) | Preview assembly and limitations |
 | [Known gaps](docs/remaining_gaps.md) | Current limitations and deferred work |
 
 Apache-2.0. Built by [Oney Erge](https://oneyerge.com).

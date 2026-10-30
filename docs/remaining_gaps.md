@@ -8,7 +8,8 @@ under `docs/archive/`; shipped details are in `IMPROVEMENTS.md`.
 
 1. Exercise a clean-machine startup, offline challenge, rerun, and comparison on each
    promoted platform. The run-scoped rerun dialog and startup readiness changes need
-   direct application verification; the portable previews remain unverified and older.
+   direct application verification. The Windows preview includes these changes but is
+   unverified; the Linux and macOS previews contain older source.
 2. Establish recorded reference outcomes for all six starter cases and publish a
    matched real-agent example with tool, time, and cost budgets.
 3. Measure first-result time and observe new users completing and repeating an experiment.
