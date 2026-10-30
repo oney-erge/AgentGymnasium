@@ -395,6 +395,15 @@ def _benchmark_hash(
     return hashlib.sha256(encoded).hexdigest()[:16]
 
 
+def _shared_provider_seed(participants: list[AgentConfig], world_seed: int | None) -> int | None:
+    """A single history seed is meaningful only when all participants share it."""
+    seeds = {
+        agent.provider_seed if agent.provider_seed is not None else world_seed
+        for agent in participants
+    }
+    return next(iter(seeds)) if len(seeds) == 1 else None
+
+
 def _world_limits(config: LaunchConfig) -> tuple[float, float, float, float]:
     size = config.world.map_size
     width = float(size[0]) if size else 32.0
@@ -1146,7 +1155,7 @@ async def run_cooperative_attempt(
             mode=config.agents.mode.value,
             provider=",".join(sorted({a.provider.value for a in participants})),
             model=",".join(sorted({a.model for a in participants})),
-            seed=config.world.seed,
+            seed=_shared_provider_seed(participants, config.world.seed),
             input_tokens=sum(
                 item.result.usage.input_tokens for item in model_interactions
             ),

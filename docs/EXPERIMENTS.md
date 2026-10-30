@@ -21,6 +21,9 @@ cells unless explicitly set. The legacy world seed remains recorded for older
 consumers; it does not generate a different physical task. The fingerprint covers
 the scenario, preset, world, constraints, and tool schemas, excluding sampling and
 cosmetic seeds. Fingerprints from older releases used a different definition.
+The **Re-run with changes** dialog edits the first agent's model-sampling seed. It preserves
+other agents' sampling and the recorded cosmetic seed, including for older saved runs that
+used the world seed as a fallback. A provider may ignore a requested sampling seed.
 
 Experiments are intentionally bounded to 120 cells and run sequentially. That
 keeps local endpoints and laptops usable and avoids changing results through

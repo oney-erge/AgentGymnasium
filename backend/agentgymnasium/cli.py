@@ -138,13 +138,20 @@ def _open_when_ready(url: str, health_url: str) -> None:
         while time.monotonic() < deadline:
             try:
                 with urllib.request.urlopen(health_url, timeout=1.0) as resp:
-                    if resp.status == 200:
+                    if (
+                        resp.status == 200
+                        and json.loads(resp.read()).get("service") == "agentgymnasium"
+                    ):
                         webbrowser.open(url)
                         return
             except Exception:  # noqa: BLE001 - server not up yet; keep polling
-                time.sleep(0.4)
-        # Fallback: open anyway so the user isn't left without a window.
-        webbrowser.open(url)
+                pass
+            time.sleep(0.4)
+        print(
+            f"AgentGymnasium did not become ready within 20 seconds. "
+            f"Check the server output, then open {url} when it is ready.",
+            file=sys.stderr,
+        )
 
     threading.Thread(target=_wait_and_open, daemon=True).start()
 

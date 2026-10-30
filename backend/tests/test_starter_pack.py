@@ -1,4 +1,5 @@
-from agentgymnasium.agents.runner import _benchmark_hash
+from agentgymnasium.agents.runner import _benchmark_hash, _shared_provider_seed
+from agentgymnasium.core.schemas.setup import AgentConfig
 from agentgymnasium.services.challenge_pack import case_config, list_cases
 from agentgymnasium.services.preset_service import get_scenario_preset
 from agentgymnasium.tools.registry import get_tool
@@ -32,3 +33,12 @@ def test_benchmark_fingerprint_tracks_budget_but_not_visual_or_sampling_seed():
 
 def test_unknown_case_does_not_produce_a_configuration():
     assert case_config("not-a-case") is None
+
+
+def test_cooperative_history_seed_requires_matching_participant_seeds():
+    first = AgentConfig(id="a", name="A", provider_seed=7)
+    second = AgentConfig(id="b", name="B", provider_seed=7)
+    assert _shared_provider_seed([first, second], 2) == 7
+    second.provider_seed = None
+    assert _shared_provider_seed([first, second], 2) is None
+    assert _shared_provider_seed([first, second], 7) == 7

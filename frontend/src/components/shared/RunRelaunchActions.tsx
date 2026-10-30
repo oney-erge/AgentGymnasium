@@ -48,7 +48,9 @@ function valuesFromConfig(config: LaunchConfig): RerunValues {
   return {
     model: agent?.model ?? '',
     temperature: String(agent?.temperature ?? 0.2),
-    seed: config.world?.seed == null ? '' : String(config.world.seed),
+    seed: (agent?.provider_seed ?? config.world?.seed) == null
+      ? ''
+      : String(agent?.provider_seed ?? config.world.seed),
     attempts: String(config.constraints?.max_attempts ?? 50),
   }
 }
@@ -141,21 +143,31 @@ export function RunRelaunchActions({
     const base = config ?? (await loadConfig())
     if (!base) return
 
+    const seed = values.seed.trim() === '' ? null : Math.trunc(finiteNumber(values.seed, 0))
     const patch: Record<string, unknown> = {
-      world: {
-        seed: values.seed.trim() === '' ? null : Math.trunc(finiteNumber(values.seed, 0)),
-      },
       constraints: {
         max_attempts: Math.max(1, Math.trunc(finiteNumber(values.attempts, 1))),
       },
     }
 
-    const participants = [...(base.agents?.participants ?? [])]
+    const participants = (base.agents?.participants ?? []).map((agent) => ({ ...agent }))
+    // Clearing a seed also clears the legacy fallback. Preserve its existing
+    // effect on other agents and on the appearance of older saved runs.
+    if (seed === null && base.world.seed != null) {
+      for (const agent of participants.slice(1)) {
+        agent.provider_seed ??= base.world.seed
+      }
+      patch.world = {
+        seed: null,
+        visual_seed: base.world.visual_seed ?? base.world.seed,
+      }
+    }
     if (participants[0]) {
       participants[0] = {
         ...participants[0],
         model: values.model.trim() || participants[0].model,
         temperature: Math.max(0, Math.min(1, finiteNumber(values.temperature, 0.2))),
+        provider_seed: seed,
       }
       patch.agents = { participants }
     }
@@ -228,7 +240,7 @@ export function RunRelaunchActions({
                 style={inputStyle()}
               />
             </Field>
-            <Field label="Seed">
+            <Field label="Model seed (first agent)">
               <input
                 type="number"
                 value={values.seed}

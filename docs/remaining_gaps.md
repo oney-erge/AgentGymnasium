@@ -4,6 +4,17 @@ This is the current backlog after the model-evaluation, iterative-agent,
 constraint-enforcement, multi-agent, and embodiment work. Historical plans live
 under `docs/archive/`; shipped details are in `IMPROVEMENTS.md`.
 
+## First-use priorities
+
+1. Exercise a clean-machine startup, offline challenge, rerun, and comparison on each
+   promoted platform. The portable previews remain unverified.
+2. Establish recorded reference outcomes for all six starter cases and publish a
+   matched real-agent example with tool, time, and cost budgets.
+3. Measure first-result time and observe new users completing and repeating an experiment.
+
+Physical deployment and additional engines remain research directions; they are not
+prerequisites for the local challenge and comparison workflow.
+
 ## Physical deployment
 
 | Priority | Gap | What “done” means |

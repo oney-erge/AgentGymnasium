@@ -23,6 +23,8 @@ Try the [recorded bridge replay](https://oney-physics-replays.hazycow18.chatgpt.
 in your browser. [Experimental portable downloads](https://github.com/oney-erge/AgentGymnasium/releases/tag/preview-0.1.2-cross-platform)
 are available for Windows x64, Linux x86-64, and macOS Intel or Apple Silicon;
 they have not yet been tested on clean machines.
+These previews contain an earlier snapshot; use a current checkout for the latest rerun and
+startup fixes.
 
 ```text
 Choose a challenge -> agent designs -> physics tests -> replay -> score -> next attempt
