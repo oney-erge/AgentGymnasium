@@ -86,11 +86,18 @@ export class TraceRenderer extends Phaser.Scene {
   private staticLayer!: Phaser.GameObjects.Graphics
   private gridLayer!: Phaser.GameObjects.Graphics
   private jointLayer!: Phaser.GameObjects.Graphics
+  /** The payload's recent path: drawn under the bodies, rebuilt every frame from the trace. */
+  private trailLayer!: Phaser.GameObjects.Graphics
   private bodyLayer!: Phaser.GameObjects.Container
   private effectLayer!: Phaser.GameObjects.Graphics
   private debugLayer!: Phaser.GameObjects.Graphics
   private labelLayer!: Phaser.GameObjects.Container
   private bodies = new Map<string, Phaser.GameObjects.Graphics>()
+  /** The body the challenge is about (the crate, the ball), if the trace has one. */
+  private payloadId: string | null = null
+  /** Whether the camera keeps the payload in view, and where it last looked (screen px). */
+  private following = false
+  private followAt: { x: number; y: number } | null = null
 
   constructor() {
     super(TraceRenderer.KEY)
@@ -111,6 +118,7 @@ export class TraceRenderer extends Phaser.Scene {
     this.gridLayer = this.add.graphics()
     this.staticLayer = this.add.graphics()
     this.jointLayer = this.add.graphics()
+    this.trailLayer = this.add.graphics()
     this.bodyLayer = this.add.container(0, 0)
     this.effectLayer = this.add.graphics()
     this.debugLayer = this.add.graphics()
@@ -172,6 +180,25 @@ export class TraceRenderer extends Phaser.Scene {
       gfx.setRotation(-body.angle)
     }
     this.renderSideOverlays(frame)
+    this.renderTrail()
+    this.followPayload(frame)
+  }
+
+  /** Keep the payload in view (on) or leave the camera where the person put it (off). */
+  setFollow(on: boolean): void {
+    this.following = on
+    this.followAt = null
+    const cam = this.cameras?.main
+    if (cam && on && this.trace && (this.trace.camera ?? 'side') !== 'iso') {
+      // Closer than the whole-world view, so the crate and the bridge under it fill the frame.
+      this.fitToWorld()
+      cam.setZoom(Phaser.Math.Clamp(cam.zoom * 1.8, 0.1, 8))
+    }
+    this.renderFrame(this.currentFrame)
+  }
+
+  isFollowing(): boolean {
+    return this.following
   }
 
   panBy(dx: number, dy: number): void {
@@ -188,6 +215,8 @@ export class TraceRenderer extends Phaser.Scene {
   }
 
   resetCamera(): void {
+    this.following = false
+    this.followAt = null
     if ((this.trace?.camera ?? 'side') === 'iso') {
       this.isoFitToWorld()
       return
@@ -227,6 +256,7 @@ export class TraceRenderer extends Phaser.Scene {
     this.staticLayer.clear()
     this.gridLayer.clear()
     this.jointLayer.clear()
+    this.trailLayer.clear()
     this.bgLayer.clear()
     this.skyLayer.clear()
     this.effectLayer.clear()
@@ -251,9 +281,59 @@ export class TraceRenderer extends Phaser.Scene {
 
     const first = trace.frames[0]
     if (first) for (const id of Object.keys(first.bodies)) this.createBody(id)
+    this.payloadId = TraceRenderer.findPayload(trace)
+    this.followAt = null
 
     this.gridLayer.setVisible(this.engineeringMode)
     this.fitToWorld(bounds)
+  }
+
+  /** The body the challenge moves: one whose kind is a crate or ball, else one named like it. */
+  static findPayload(trace: EpisodeTrace): string | null {
+    const ids = Object.keys(trace.frames[0]?.bodies ?? {})
+    const byKind = ids.find((id) => ['crate', 'ball', 'payload'].includes(trace.body_meta?.[id]?.kind ?? ''))
+    return byKind ?? ids.find((id) => /crate|ball|payload|cargo/i.test(id)) ?? null
+  }
+
+  /** A fading line along the payload's last two seconds, so its path reads in a still frame. */
+  private renderTrail(): void {
+    this.trailLayer.clear()
+    const trace = this.trace
+    const id = this.payloadId
+    if (!trace || !id || this.engineeringMode) return
+    const dt = trace.dt || 1 / 60
+    const span = Math.max(2, Math.round(2.0 / dt))
+    const stride = Math.max(1, Math.round(0.03 / dt))
+    const start = Math.max(0, this.currentFrame - span)
+    let previous: { sx: number; sy: number } | null = null
+    for (let i = start; i <= this.currentFrame; i += stride) {
+      const body = trace.frames[i]?.bodies[id]
+      if (!body) continue
+      const point = TraceRenderer.px(body.x, body.y)
+      if (previous) {
+        const age = (this.currentFrame - i) / span // 0 now, 1 two seconds ago
+        this.trailLayer.lineStyle(6 * (1 - age) + 1.5, 0xfbbf24, 0.55 * (1 - age))
+        this.trailLayer.lineBetween(previous.sx, previous.sy, point.sx, point.sy)
+      }
+      previous = point
+    }
+  }
+
+  /** Ease the camera toward the payload (snapping after a jump in time, as when scrubbing). */
+  private followPayload(frame: Frame): void {
+    const cam = this.cameras?.main
+    const id = this.payloadId
+    if (!this.following || !cam || !id) return
+    const body = frame.bodies[id]
+    if (!body) return
+    const target = TraceRenderer.px(body.x, body.y + 1.2)
+    const at = this.followAt
+    const far = !at || Math.hypot(target.sx - at.x, target.sy - at.y) > 6 * SCALE
+    const blend = this.reducedMotion || far ? 1 : 0.18
+    const x = at ? at.x + (target.sx - at.x) * blend : target.sx
+    const y = at ? at.y + (target.sy - at.y) * blend : target.sy
+    this.followAt = { x, y }
+    cam.centerOn(x, y)
   }
 
   /** World extent in metres across terrain + props + first-frame bodies. */
