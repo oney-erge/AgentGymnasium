@@ -281,6 +281,8 @@ export interface Frame {
   t: number
   bodies: Record<string, FrameBody>
   events?: TraceVisualEvent[]
+  /** How hard each part was pressed since the previous frame (0..1 of the engine's full load). */
+  loads?: Record<string, number>
 }
 
 export interface EpisodeTrace {
