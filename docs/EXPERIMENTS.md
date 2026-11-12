@@ -78,6 +78,33 @@ An offline Windows run of this exact pack completed six cells. Both scripted
 variants scored 80 on seeds 7, 11, and 42, so all three paired comparisons
 were ties. This is an example of the output, not a model leaderboard.
 
+### Local models on the bridge
+
+[`bridge-local-qwen35.yaml`](examples/bridge-local-qwen35.yaml) gives two local
+models three attempts each on the standard bridge (world seed 7, four turns per
+attempt). Each model ran in its own llama.cpp `llama-server` (build 11977) on a
+laptop CPU, 6 threads, Q4_K_M weights, thinking off. One run per model, so this is
+an example of what the evidence looks like, not a leaderboard:
+
+| Attempt | Qwen3.5 4B | Qwen3.5 9B |
+| --- | --- | --- |
+| 1 | 23.7 | -10.0: its deck fell into the ravine |
+| 2 | 24.6 | 9.8 |
+| 3 | 22.3 | **49.7**: 80% of the way to the flag, 3 parts |
+
+The scripted example scores 80 on the same case. Neither model delivered the
+crate. The 4B made one call per attempt: a deck that was not fixed in place, then
+two more crates. The 9B's best attempt built a deck across the gap but also pinned
+the crate to a post just past it, so the crate crosses and stops:
+
+![Qwen3.5 9B's best bridge attempt: the crate rolls down the ramp and across the deck the model built over the gap, then stops at a post the model pinned it to, short of the flag](assets/qwen35-9b-bridge.gif)
+
+These runs also showed the repair pass doubling the payload: a model that
+re-declared the world's crate got a second crate named `crate_r`. A duplicate of a
+part the world placed is now left rejected. The 9B column is from a run after that
+fix; the 4B made no duplicates, so its run is unaffected. On the CPU the 4B took
+about 70 seconds per attempt and the 9B about 5 minutes.
+
 Create a YAML or JSON matrix:
 
 ```yaml

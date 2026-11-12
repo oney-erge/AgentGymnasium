@@ -654,7 +654,12 @@ def _repair_rejected(
     body-creating call (``... already exists``). Retries with a ``_r`` suffix and,
     on success, returns one synthetic ``repair_pass`` record. The original
     rejected records are preserved for explainability.
+
+    A duplicate of a part the world seeded (the crate, a cliff) is left rejected:
+    the agent was naming the part that is already there, and a renamed copy would
+    add a second crate to the challenge.
     """
+    world_ids = {b.id for b in design.bodies if b.created_by == WORLD_AUTHOR}
     before_bodies = _body_ids(design)
     before_joints = _joint_ids(design)
     repairs: list[dict[str, str]] = []
@@ -662,6 +667,8 @@ def _repair_rejected(
         if record.status != ToolCallStatus.rejected or not record.error:
             continue
         if "already exists" not in record.error:
+            continue
+        if record.tool == "create_body" and record.args.get("id") in world_ids:
             continue
         new_id = f"{record.args.get('id', '')}_r"
         if not new_id or new_id == "_r":
