@@ -41,6 +41,7 @@ export const WorldView = forwardRef<WorldViewHandle, WorldViewProps>(function Wo
   const sceneRef = useRef<TraceRenderer | null>(null)
   const detachControlsRef = useRef<(() => void) | null>(null)
   const [presentationMode, setPresentationMode] = useState<'beauty' | 'engineering'>('beauty')
+  const [following, setFollowing] = useState(false)
 
   // Create the Phaser.Game exactly once (guard against StrictMode double-mount).
   useEffect(() => {
@@ -191,7 +192,24 @@ export const WorldView = forwardRef<WorldViewHandle, WorldViewProps>(function Wo
         <CamButton label="►" title="Pan right" onClick={() => sceneRef.current?.panBy(40, 0)} />
         <CamButton label="▲" title="Pan up" onClick={() => sceneRef.current?.panBy(0, -40)} />
         <CamButton label="▼" title="Pan down" onClick={() => sceneRef.current?.panBy(0, 40)} />
-        <CamButton label="⟳" title="Reset camera" onClick={() => sceneRef.current?.resetCamera()} />
+        <CamButton
+          label="◎"
+          title={following ? 'Stop following the payload' : 'Follow the payload'}
+          active={following}
+          onClick={() => {
+            const next = !following
+            sceneRef.current?.setFollow(next)
+            setFollowing(next)
+          }}
+        />
+        <CamButton
+          label="⟳"
+          title="Reset camera"
+          onClick={() => {
+            sceneRef.current?.resetCamera()
+            setFollowing(false)
+          }}
+        />
         <CamButton label="#" title="Toggle grid" onClick={() => sceneRef.current?.toggleGrid()} />
         <CamButton
           label={presentationMode === 'beauty' ? '◇' : '⌁'}
