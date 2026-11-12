@@ -8,9 +8,9 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 
-![A recorded Bridge Builder replay: the camera follows a crate down a ramp and across the deck the agent built, a fading trail marks its path, and the deck flashes red where the crate lands, then glows amber under its weight](docs/assets/replay.gif)
+![Qwen3.5 9B, running on a laptop CPU, solves Bridge Builder on its third attempt: the camera follows the crate down the ramp and across the two decks the model built over the ravine, which glow amber under its weight, and the crate reaches the flag](docs/assets/replay.gif)
 
-<sub>The built-in offline example: scripted tool calls, so it needs no API key or model. The parts the agent built glow with the force on them.</sub>
+<sub>A real run: Qwen3.5 9B on a laptop CPU, through llama.cpp, on its third attempt (<a href="docs/EXPERIMENTS.md#local-models-on-the-bridge">results</a>). The parts the agent built glow with the force on them.</sub>
 
 </div>
 

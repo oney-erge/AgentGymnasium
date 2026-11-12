@@ -63,12 +63,16 @@ def build_system_prompt(
     enabled_tools: list[ToolDefinition],
     constraints: str = "",
     movable_body_required: bool = True,
+    payloads: list[str] | tuple[str, ...] = (),
 ) -> str:
     """System prompt for a single builder agent in the physics sandbox.
 
     ``movable_body_required`` gates the "include a movable body" rule below —
     false for challenges (e.g. Tiny City) whose objective is a mostly-static
     scene, where forcing a movable body would fight the actual objective.
+    ``payloads`` are the movable objects the world already placed for the challenge
+    to move (a bridge's crate): then the rule is to leave them free and build the
+    fixed parts they travel on, not to add movable bodies of one's own.
     """
     tool_lines = "\n".join(_tool_line(t) for t in enabled_tools)
     parts = [
@@ -84,14 +88,25 @@ def build_system_prompt(
     )
     if any(t.name in _KINDABLE_TOOLS for t in enabled_tools):
         parts.append(_kind_guidance(challenge_objective))
-    movable_rule = (
-        "- Your design MUST include at least one MOVABLE (non-static) body, or "
-        "nothing will move and you score zero. create_body and add_ball are "
-        "movable; add_beam and add_ramp are fixed scaffolding.\n"
-        if movable_body_required
-        else "- This is a mostly-static scene — most or all bodies should be "
-        "static:true (buildings, roads, parks). You do NOT need a moving body.\n"
-    )
+    if payloads:
+        names = ", ".join(payloads)
+        movable_rule = (
+            f"- Already in the world and moving on their own: {names}. Do NOT create "
+            "another one and do NOT join them to anything: build the FIXED parts "
+            "(static: true, or add_beam / add_ramp) they will roll, slide or fall "
+            "onto.\n"
+        )
+    elif movable_body_required:
+        movable_rule = (
+            "- Your design MUST include at least one MOVABLE (non-static) body, or "
+            "nothing will move and you score zero. create_body and add_ball are "
+            "movable; add_beam and add_ramp are fixed scaffolding.\n"
+        )
+    else:
+        movable_rule = (
+            "- This is a mostly-static scene — most or all bodies should be "
+            "static:true (buildings, roads, parks). You do NOT need a moving body.\n"
+        )
     parts.append(
         "Rules:\n"
         "- Build in world units (METERS), not pixels — coordinates are small "
