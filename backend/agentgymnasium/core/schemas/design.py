@@ -8,6 +8,10 @@ from pydantic import BaseModel
 # goal markers) rather than an agent. Excluded from agent-effort scoring.
 WORLD_AUTHOR = "world"
 
+# Kinds of the objects a challenge moves (the crate a bridge carries, the balls a sorter
+# sorts). When the world places one, it is the task's payload: the agent builds around it.
+PAYLOAD_KINDS = frozenset({"crate", "ball", "cargo", "payload"})
+
 
 class BodyShape(StrEnum):
     segment = "segment"
@@ -70,3 +74,12 @@ class DesignSpec(BaseModel):
     bodies: list[BodySpec] = []
     joints: list[JointSpec] = []
     metadata: dict = {}
+
+
+def payload_ids(design: DesignSpec) -> list[str]:
+    """Ids of the movable objects the world placed for the challenge to move."""
+    return [
+        b.id
+        for b in design.bodies
+        if b.created_by == WORLD_AUTHOR and not b.static and (b.kind or "") in PAYLOAD_KINDS
+    ]

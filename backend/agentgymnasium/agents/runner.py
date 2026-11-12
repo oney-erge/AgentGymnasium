@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import pathlib
 import time
 import uuid
@@ -16,7 +17,13 @@ from agentgymnasium.agents.prompts import (
     build_user_prompt,
 )
 from agentgymnasium.core.schemas.challenge import ScenarioPreset
-from agentgymnasium.core.schemas.design import WORLD_AUTHOR, BodySpec, DesignSpec
+from agentgymnasium.core.schemas.design import (
+    PAYLOAD_KINDS,
+    WORLD_AUTHOR,
+    BodySpec,
+    DesignSpec,
+    payload_ids,
+)
 from agentgymnasium.core.schemas.model import ModelInteraction, ModelRequest
 from agentgymnasium.core.schemas.score import ScoreCard
 from agentgymnasium.core.schemas.setup import (
@@ -134,6 +141,46 @@ def _seed_scaffold(design: DesignSpec, preset: ScenarioPreset | None) -> None:
     _seed_bodies(design, preset.scaffold, force_static=False)
 
 
+def _ground_sentence(design: DesignSpec, half_x: int) -> str:
+    """Where the floor at y=0 is solid, and where it is open air (a ravine)."""
+    spans = design.metadata.get("ground_spans")
+    if not spans:
+        return "The ground is a flat solid floor at y=0."
+    spans = sorted((float(a), float(b)) for a, b in spans)
+    solid = " and ".join(f"x {a:g} to {b:g}" for a, b in spans)
+    gaps = [(spans[i][1], spans[i + 1][0]) for i in range(len(spans) - 1) if spans[i][1] < spans[i + 1][0]]
+    text = f"The floor at y=0 is solid only for {solid}."
+    if gaps:
+        holes = " and ".join(f"x {a:g} to {b:g}" for a, b in gaps)
+        text += f" There is NO floor for {holes}: anything over it falls through."
+    return text
+
+
+def _describe_body(body) -> str:
+    """One object's id and the geometry an agent needs to build against it."""
+    x, y = float(body.position[0]), float(body.position[1])
+    state = "fixed" if body.static else "movable"
+    shape = body.shape.value
+    if shape == "box" and len(body.size) >= 2:
+        w, h = float(body.size[0]), float(body.size[1])
+        geometry = f"{w:g} x {h:g} m, x {x - w / 2:.2f} to {x + w / 2:.2f}, top at y={y + h / 2:.2f}"
+    elif shape == "circle" and body.size:
+        geometry = f"radius {float(body.size[0]):g} m, center [{x:.1f}, {y:.1f}]"
+    elif shape == "segment" and body.size:
+        half = float(body.size[0]) / 2
+        dx, dy = half * math.cos(body.angle), half * math.sin(body.angle)
+        geometry = f"from [{x - dx:.2f}, {y - dy:.2f}] to [{x + dx:.2f}, {y + dy:.2f}]"
+    else:
+        geometry = f"at [{x:.1f}, {y:.1f}]"
+    notes = []
+    if body.sensor:
+        notes.append("a marker: nothing rests on it")
+    if body.created_by == WORLD_AUTHOR and not body.static and (body.kind or "") in PAYLOAD_KINDS:
+        notes.append("the object to move: leave it free")
+    extra = f"; {'; '.join(notes)}" if notes else ""
+    return f"{body.id} ({state} {shape}, {geometry}{extra})"
+
+
 def _world_context(config: LaunchConfig, preset: ScenarioPreset | None, design: DesignSpec) -> str:
     """A grounded world description for the system prompt.
 
@@ -160,16 +207,12 @@ def _world_context(config: LaunchConfig, preset: ScenarioPreset | None, design: 
     else:
         lines = [
             f"{w.terrain.value} terrain, engine {w.engine.value}, gravity {w.gravity} m/s^2.",
-            "Coordinates are in METERS, not pixels. The ground is a flat solid floor at "
-            f"y=0 and up is +y. Keep parts within x in [-{half_x}, {half_x}] and y in "
-            f"[0, {max_y}].",
+            "Coordinates are in METERS, not pixels. Up is +y. Keep parts within x in "
+            f"[-{half_x}, {half_x}] and y in [0, {max_y}].",
+            _ground_sentence(design, half_x),
         ]
     if design.bodies:
-        objs = "; ".join(
-            f"{b.id} ({'fixed' if b.static else 'movable'} {b.shape.value}) at "
-            f"[{b.position[0]:.1f}, {b.position[1]:.1f}]"
-            for b in design.bodies[:10]
-        )
+        objs = "; ".join(_describe_body(b) for b in design.bodies[:14])
         lines.append(f"Objects already in the world (build on / connect to these): {objs}.")
     goal = preset.goal if preset else {}
     if isinstance(goal.get("goal_x"), (int, float)):
@@ -772,6 +815,7 @@ async def run_agent_attempt(
             world_summary,
             enabled_defs,
             movable_body_required=preset is None or preset.reward not in _STATIC_OK_REWARDS,
+            payloads=payload_ids(design),
         ),
     )
     memory = (
@@ -1049,6 +1093,7 @@ async def run_cooperative_attempt(
                 movable_body_required=(
                     preset is None or preset.reward not in _STATIC_OK_REWARDS
                 ),
+                payloads=payload_ids(design),
             ),
         )
 
