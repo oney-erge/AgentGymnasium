@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "repository": {"id": "oney-erge/AgentGymnasium", "owner": "oney-erge", "maintenance": "unclassified", "interfaces": ["browser-ui", "api"]},
+  "capabilities": ["simulation", "async-jobs"],
+  "components": [{"id": "backend", "root": "backend"}, {"id": "frontend", "root": "frontend"}],
+  "environment": {"python": ">=3.11", "source": "pyproject.toml", "provider_calls": "use deterministic fixtures for routine checks"},
+  "checks": {
+    "experiments": {"argv": ["python", "-m", "pytest", "backend/tests/test_experiments.py", "-q"], "cwd": ".", "timeout_seconds": 180, "lane": "fast", "effects": "local-test-files"},
+    "exports": {"argv": ["python", "-m", "pytest", "backend/tests/test_exports.py", "-q"], "cwd": ".", "timeout_seconds": 180, "lane": "journey", "effects": "local-test-files"}
+  },
+  "journeys": [{"id": "run-replay-export", "user_outcome": "Run a deterministic experiment, inspect a replay and export its result", "checks": ["experiments", "exports"], "additional_evidence_needed": ["browser replay and reconnect", "provider invocation count during observation", "coverage for mixed outcomes", "keyboard and focus review"]}],
+  "evidence": {"status": "not-collected-by-repoctl", "note": "These checks do not establish the entire browser or provider journey."},
+  "agent": {"instruction_entry": "AGENTS.md", "command_trust": "external-to-repository"}
+}

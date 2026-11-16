@@ -13,7 +13,7 @@ export default defineConfig({
     outDir: '../backend/agentgymnasium/static/replay',
     emptyOutDir: true,
     lib: {
-      entry: fileURLToPath(new URL('./src/replay.tsx', import.meta.url)),
+      entry: fileURLToPath(new URL('./src/replay-entry.tsx', import.meta.url)),
       name: 'AgentGymnasiumReplay',
       formats: ['iife'],
       fileName: () => 'replay.js',

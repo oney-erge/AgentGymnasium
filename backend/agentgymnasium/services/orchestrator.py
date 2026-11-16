@@ -106,6 +106,10 @@ def _ownership_by_agent(design: DesignSpec) -> dict[str, dict]:
     return by_agent
 
 
+def _terminal_event(event: dict) -> bool:
+    return event.get("type") == "run_finished" or (event.get("type") == "error" and event.get("terminal") is True)
+
+
 class _RunState:
     def __init__(self) -> None:
         self.events: list[dict] = []
@@ -164,7 +168,25 @@ class RunManager:
         self._evict_finished_runs()
         # Retain a strong reference so the task isn't GC'd mid-run.
         state.task = asyncio.create_task(self._run(run_id, config))
+        # A task cancelled before its coroutine starts never enters _run's
+        # exception/finally handlers, so also handle that boundary here.
+        state.task.add_done_callback(lambda task: self._run_task_done(run_id, task))
         return run_id
+
+    def _interrupt_run(self, run_id: str) -> None:
+        state = self._runs.get(run_id)
+        if state is None or any(_terminal_event(event) for event in state.events):
+            return
+        self._emit(run_id, {
+            "type": "error",
+            "detail": "Run observation was interrupted; external work may still be running.",
+            "terminal": True,
+        })
+        state.finished = True
+
+    def _run_task_done(self, run_id: str, task: asyncio.Task[None]) -> None:
+        if task.cancelled():
+            self._interrupt_run(run_id)
 
     def _evict_finished_runs(self) -> None:
         """Drop the oldest FINISHED runs once over the cap (never in-flight ones)."""
@@ -191,7 +213,7 @@ class RunManager:
             already_finished = state.finished
             for event in buffered:
                 yield event
-                if event.get("type") == "run_finished":
+                if _terminal_event(event):
                     return
             if already_finished:
                 # Run completed before we attached; buffered history is complete.
@@ -199,7 +221,7 @@ class RunManager:
             while True:
                 event = await queue.get()
                 yield event
-                if event.get("type") == "run_finished":
+                if _terminal_event(event):
                     return
         finally:
             state.subscribers.discard(queue)
@@ -209,6 +231,9 @@ class RunManager:
     async def _run(self, run_id: str, config: LaunchConfig) -> None:
         try:
             await self._run_inner(run_id, config)
+        except asyncio.CancelledError:
+            self._interrupt_run(run_id)
+            raise
         except Exception as exc:  # noqa: BLE001 - surface failures to subscribers
             # Carry the structured kind (auth/timeout/server/…) when an LLM call
             # failed, so the UI can show an actionable reason.

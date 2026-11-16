@@ -230,19 +230,19 @@ export function ExperimentsScreen() {
                   <h2 style={title()}>{selected?.spec.name ?? 'No experiments yet'}</h2>
                   {selected && (
                     <p style={muted()}>
-                      {selected.status} · {Math.round(progress * 100)}% · {selected.cells.length} cells
+                      {selected.status} · {selected.outcome === 'partial' ? 'finished with incomplete cells' : selected.outcome} · {Math.round(progress * 100)}% · {selected.coverage.completed}/{selected.coverage.total} completed · {selected.coverage.failed} failed · {selected.coverage.cancelled} cancelled
                     </p>
                   )}
                 </div>
                 {selected && ['queued', 'running'].includes(selected.status) && (
-                  <button type="button" onClick={() => void cancel()} style={secondary()}>
-                    Cancel after current cell
+                  <button type="button" disabled={selected.cancel_requested} onClick={() => void cancel()} style={secondary()}>
+                    {selected.cancel_requested ? 'Stopping after current cell' : 'Cancel after current cell'}
                   </button>
                 )}
               </div>
               {selected?.interrupted && (
                 <div style={muted()}>
-                  <p>The server restarted. Any in-flight cell was not retried and may have incurred a provider charge. Completed cells are preserved.</p>
+                  <p>This experiment was interrupted. In-flight work was not retried and may have incurred a provider charge. Completed cells are preserved.</p>
                   {selected.recovery_safe && selected.cells.some((cell) => cell.status === 'queued') ? (
                     <>
                       <p>Resume only the remaining queued cells. Provider calls may incur charges. Re-enter keys if needed; they are not saved.</p>
@@ -253,7 +253,7 @@ export function ExperimentsScreen() {
                       ))}
                       <button type="button" disabled={busy} onClick={() => void resume()} style={secondary()}>Resume queued cells</button>
                     </>
-                  ) : selected.recovery_safe ? <p>No queued cells remain to resume.</p> : <p>This older experiment cannot be resumed safely; start a new one if needed.</p>}
+                  ) : selected.recovery_safe ? <p>No queued cells remain to resume.</p> : <p>This experiment cannot be resumed safely. Check whether earlier work has stopped before starting another run.</p>}
                 </div>
               )}
               <div style={{ height: 6, background: 'var(--surface-2)', borderRadius: 8, marginTop: 12 }}>

@@ -405,6 +405,9 @@ export interface ExperimentRecord {
   error?: string | null
   recovery_safe: boolean
   interrupted: boolean
+  cancel_requested: boolean
+  outcome: 'in_progress' | 'succeeded' | 'partial' | 'failed' | 'cancelled'
+  coverage: Record<ExperimentCellStatus | 'total', number>
 }
 
 export interface ExperimentAggregate {

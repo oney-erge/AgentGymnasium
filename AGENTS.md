@@ -8,6 +8,8 @@ history.
 
 ## Focused commands
 
+See `docs/STATE_MACHINES.md` for experiment, replay, and recovery boundaries.
+
 - Backend lint: `uv run ruff check .`
 - Backend tests: `uv run pytest`
 - Frontend build: `cd frontend && npm run build`

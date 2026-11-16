@@ -1,5 +1,6 @@
 import asyncio
 
+import pytest
 from fastapi.testclient import TestClient
 
 from agentgymnasium.app import app
@@ -88,6 +89,53 @@ def test_subscribe_unknown_run():
         manager = RunManager()
         received = [event async for event in manager.subscribe("does-not-exist")]
         assert received == [{"type": "error", "detail": "unknown run"}]
+
+    asyncio.run(scenario())
+
+
+@pytest.mark.parametrize("cancel_before_start", [False, True])
+def test_cancelled_launch_notifies_current_and_late_subscribers(monkeypatch, cancel_before_start):
+    async def scenario() -> None:
+        manager = RunManager()
+        entered = asyncio.Event()
+        observed_start = asyncio.Event()
+        provider_calls = 0
+
+        async def blocked_run(run_id, _config):
+            nonlocal provider_calls
+            provider_calls += 1
+            manager._emit(run_id, {"type": "run_started", "run_id": run_id})
+            entered.set()
+            await asyncio.Event().wait()
+
+        monkeypatch.setattr(orchestrator, "record_launch_config", lambda *_args: None)
+        monkeypatch.setattr(manager, "_run_inner", blocked_run)
+        run_id = await manager.create_run(_config())
+
+        async def collect():
+            events = []
+            async for event in manager.subscribe(run_id):
+                events.append(event)
+                if event["type"] == "run_started":
+                    observed_start.set()
+            return events
+
+        subscriber = asyncio.create_task(collect())
+        if not cancel_before_start:
+            await entered.wait()
+            await observed_start.wait()
+        task = manager._runs[run_id].task
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+        received = await asyncio.wait_for(subscriber, timeout=1)
+        late = await asyncio.wait_for(collect(), timeout=1)
+        for events in (received, late):
+            assert events[-1]["type"] == "error"
+            assert events[-1]["terminal"] is True
+            assert "may still" in events[-1]["detail"]
+            assert not any(event["type"] == "run_finished" for event in events)
+        assert provider_calls == (0 if cancel_before_start else 1)
 
     asyncio.run(scenario())
 

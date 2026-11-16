@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { createRoot } from 'react-dom/client'
 import type { EpisodeTrace, ScoreCard } from './api/types'
 import { WorldView } from './components/studio/WorldView'
 import './index.css'
@@ -10,10 +9,9 @@ declare global {
   }
 }
 
-function Replay() {
+export default function Replay() {
   const { trace, score } = window.AGENTGYMNASIUM_REPLAY
-  const [time, setTime] = useState(0)
-  const [playing, setPlaying] = useState(false)
+  const [{ time, playing }, setPlayback] = useState({ time: 0, playing: false })
   const duration = trace.frames.at(-1)?.t ?? 0
 
   useEffect(() => {
@@ -23,14 +21,13 @@ function Replay() {
       const now = performance.now()
       const delta = (now - previous) / 1000
       previous = now
-      setTime((current) => Math.min(duration, current + delta))
+      setPlayback((current) => {
+        const time = Math.min(duration, current.time + delta)
+        return { time, playing: time < duration }
+      })
     }, 33)
     return () => window.clearInterval(timer)
   }, [playing, duration])
-
-  useEffect(() => {
-    if (time >= duration) setPlaying(false)
-  }, [time, duration])
 
   let low = 0
   let high = trace.frames.length - 1
@@ -53,14 +50,12 @@ function Replay() {
         <WorldView trace={trace} frameIndex={Math.max(0, low)} />
       </div>
       <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-        <button onClick={() => { if (time >= duration) setTime(0); setPlaying(!playing) }} style={{ padding: '6px 12px' }}>
+        <button onClick={() => setPlayback((current) => ({ time: current.time >= duration ? 0 : current.time, playing: !current.playing && duration > 0 }))} style={{ padding: '6px 12px' }}>
           {playing ? 'Pause' : 'Play'}
         </button>
-        <input type="range" aria-label="Replay time" min={0} max={duration || 1} step="any" value={time} onChange={(e) => setTime(Number(e.target.value))} style={{ flex: 1 }} />
+        <input type="range" aria-label="Replay time" min={0} max={duration || 1} step="any" value={time} onChange={(e) => { const time = Number(e.target.value); setPlayback((current) => ({ time, playing: current.playing && time < duration })) }} style={{ flex: 1 }} />
         <span>{time.toFixed(2)} / {duration.toFixed(2)} s</span>
       </div>
     </main>
   )
 }
-
-createRoot(document.getElementById('root')!).render(<Replay />)

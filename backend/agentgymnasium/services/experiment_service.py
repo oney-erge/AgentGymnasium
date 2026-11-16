@@ -22,6 +22,7 @@ from agentgymnasium.services.run_service import get_model_interactions, get_scor
 
 _EXPERIMENTS_DIR = pathlib.Path("runs") / "experiments"
 _MAX_CELLS = 120
+_RESTARTED_IN_FLIGHT = "Interrupted in flight; this cell was not retried."
 
 # Two-sided 95% Student-t critical values for 1..30 degrees of freedom.
 # For larger samples the 30-df value is conservative; no statistics package is
@@ -48,8 +49,8 @@ class ExperimentManager:
 
     Each matrix cell is an ordinary AgentGymnasium launch, preserving all existing
     validation, traces, scores, artifacts, and replay behavior. Experiments are
-    local-first JSON records. Only queued cells can be resumed after restart;
-    an in-flight cell is marked failed because it may already have incurred work.
+    local-first JSON records. Queued cells can be resumed after restart only
+    when no in-flight cell has an unresolved external outcome.
     """
 
     def __init__(
@@ -78,14 +79,28 @@ class ExperimentManager:
             if record.id != path.stem:
                 continue
             if record.status in (ExperimentStatus.queued, ExperimentStatus.running):
-                record.status = ExperimentStatus.failed
+                was_cancelled = record.cancel_requested
+                record.status = ExperimentStatus.cancelled if was_cancelled else ExperimentStatus.failed
                 record.finished_at = time.time()
                 record.interrupted = True
                 record.error = "Server restarted before the experiment completed."
                 for cell in record.cells:
                     if cell.status == CellStatus.running:
                         cell.status = CellStatus.failed
-                        cell.error = "Interrupted in flight; this cell was not retried."
+                        cell.error = _RESTARTED_IN_FLIGHT
+                        # A restarted observer cannot establish that the old
+                        # provider work has stopped; do not start another cell.
+                        record.recovery_safe = False
+                    elif was_cancelled and cell.status == CellStatus.queued:
+                        cell.status = CellStatus.cancelled
+                record.cancel_requested = False
+                self._persist(record)
+            elif record.interrupted and record.recovery_safe and any(
+                cell.status == CellStatus.failed and cell.error == _RESTARTED_IN_FLIGHT
+                for cell in record.cells
+            ):
+                # Earlier versions marked this same uncertain restart safe.
+                record.recovery_safe = False
                 self._persist(record)
             self.records[record.id] = record
 
@@ -136,7 +151,7 @@ class ExperimentManager:
         self._persist(record)
         task = asyncio.create_task(self._execute(record))
         self.tasks[experiment_id] = task
-        task.add_done_callback(lambda _task: self.tasks.pop(experiment_id, None))
+        task.add_done_callback(lambda finished: self._task_finished(record, finished))
         return self._redact(record)
 
     async def resume(self, experiment_id: str, api_keys: dict[str, str]) -> ExperimentRecord:
@@ -161,8 +176,41 @@ class ExperimentManager:
         self._persist(record)
         task = asyncio.create_task(self._execute(record))
         self.tasks[experiment_id] = task
-        task.add_done_callback(lambda _task: self.tasks.pop(experiment_id, None))
+        task.add_done_callback(lambda finished: self._task_finished(record, finished))
         return self._redact(record)
+
+    def _interrupt_scheduler(self, record: ExperimentRecord) -> None:
+        in_flight = False
+        cancelled = record.cancel_requested or record.id in self.cancel_requested
+        for cell in record.cells:
+            if cell.status == CellStatus.running:
+                in_flight = True
+                cell.status = CellStatus.failed
+                cell.error = "Run observation was interrupted; external work may still be running."
+            elif cancelled and cell.status == CellStatus.queued:
+                cell.status = CellStatus.cancelled
+        record.interrupted = True
+        if in_flight:
+            record.recovery_safe = False
+        record.status = ExperimentStatus.cancelled if cancelled else ExperimentStatus.failed
+        record.error = (
+            "Experiment scheduling was interrupted; external work may still be running."
+            if in_flight else "Experiment scheduling was interrupted before another cell started."
+        )
+        record.finished_at = time.time()
+        record.cancel_requested = False
+        self.cancel_requested.discard(record.id)
+        self._persist(record)
+
+    def _task_finished(self, record: ExperimentRecord, task: asyncio.Task[None]) -> None:
+        try:
+            # A task cancelled before its coroutine begins cannot handle its
+            # own cancellation. Preserve the same restart/recovery contract.
+            if task.cancelled() and record.status in (ExperimentStatus.queued, ExperimentStatus.running):
+                self._interrupt_scheduler(record)
+        finally:
+            if self.tasks.get(record.id) is task:
+                self.tasks.pop(record.id, None)
 
     def list(self) -> list[ExperimentRecord]:
         records = sorted(self.records.values(), key=lambda r: r.created_at, reverse=True)
@@ -178,6 +226,8 @@ class ExperimentManager:
             return None
         if record.status in (ExperimentStatus.queued, ExperimentStatus.running):
             self.cancel_requested.add(experiment_id)
+            record.cancel_requested = True
+            self._persist(record)
         return self._redact(record)
 
     async def wait(self, experiment_id: str) -> ExperimentRecord | None:
@@ -204,22 +254,35 @@ class ExperimentManager:
                     continue
                 await self._execute_cell(record, cell)
                 self._persist(record)
+                if record.interrupted:
+                    break
             if record.id in self.cancel_requested:
                 record.status = ExperimentStatus.cancelled
                 for cell in record.cells:
                     if cell.status == CellStatus.queued:
                         cell.status = CellStatus.cancelled
+            elif record.interrupted:
+                record.status = ExperimentStatus.failed
             elif any(cell.status == CellStatus.completed for cell in record.cells):
                 record.status = ExperimentStatus.completed
             else:
                 record.status = ExperimentStatus.failed
                 record.error = "Every experiment cell failed."
+        except asyncio.CancelledError:
+            self._interrupt_scheduler(record)
+            raise
         except Exception as exc:  # noqa: BLE001 - persist scheduler failure
+            if any(cell.status == CellStatus.running for cell in record.cells):
+                # Launch or observation can fail after external work began.
+                # Preserve that uncertainty instead of leaving a running cell
+                # inside a terminal experiment.
+                self._interrupt_scheduler(record)
             record.status = ExperimentStatus.failed
             record.error = str(exc)
         finally:
             record.finished_at = time.time()
             self.cancel_requested.discard(record.id)
+            record.cancel_requested = False
             self._persist(record)
 
     async def _execute_cell(
@@ -261,6 +324,13 @@ class ExperimentManager:
         async for event in self.runs.subscribe(launch_id):
             if event.get("type") == "error":
                 error_detail = str(event.get("detail") or "run failed")
+                if event.get("terminal") is True:
+                    # An interrupted observer does not prove that external
+                    # provider work stopped. Do not dispatch more cells or
+                    # offer the normal queued-cell recovery path.
+                    record.interrupted = True
+                    record.recovery_safe = False
+                    record.error = error_detail
             elif event.get("type") == "run_finished":
                 finished = event
 

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from enum import StrEnum
+from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 
 from agentgymnasium.core.schemas.setup import LaunchConfig, LLMProvider
 
@@ -97,6 +98,28 @@ class ExperimentRecord(BaseModel):
     error: str | None = None
     recovery_safe: bool = False
     interrupted: bool = False
+    cancel_requested: bool = False
+
+    @computed_field
+    @property
+    def coverage(self) -> dict[str, int]:
+        counts = {status.value: 0 for status in CellStatus}
+        for cell in self.cells:
+            counts[cell.status.value] += 1
+        return {"total": len(self.cells), **counts}
+
+    @computed_field
+    @property
+    def outcome(self) -> Literal["in_progress", "succeeded", "partial", "failed", "cancelled"]:
+        if self.status in (ExperimentStatus.queued, ExperimentStatus.running):
+            return "in_progress"
+        if self.status == ExperimentStatus.cancelled:
+            return "cancelled"
+        if self.status == ExperimentStatus.failed:
+            return "failed"
+        if self.cells and all(cell.status == CellStatus.completed for cell in self.cells):
+            return "succeeded"
+        return "partial"
 
 
 class ResumeExperimentRequest(BaseModel):

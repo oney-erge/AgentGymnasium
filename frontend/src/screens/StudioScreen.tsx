@@ -13,7 +13,7 @@ import { TelemetryPanel, type AttemptScore } from '../components/studio/Telemetr
 import { AttemptHistory } from '../components/studio/AttemptHistory'
 import { AttemptDiffPanel } from '../components/studio/AttemptDiffPanel'
 import { ModelInspector } from '../components/studio/ModelInspector'
-import { api, downloadUrl, wsUrl } from '../api/client'
+import { api, ApiError, downloadUrl, wsUrl } from '../api/client'
 import { RunRelaunchActions } from '../components/shared/RunRelaunchActions'
 import { useMediaQuery } from '../hooks/useMediaQuery'
 import type {
@@ -41,6 +41,11 @@ export function StudioScreen() {
 
   // ── Playback state (drives the Phaser replay) ──────────────────────────────
   const [trace, setTrace] = useState<EpisodeTrace | null>(null)
+  // A late response belongs to the selection that requested it, not the next one.
+  const traceSelectionVersion = useRef(0)
+  const playbackControlVersion = useRef(0)
+  const followLiveRef = useRef(true)
+  const [manualRunId, setManualRunId] = useState<string | null>(null)
   const [frameIndex, setFrameIndex] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [speed, setSpeed] = useState(1)
@@ -58,7 +63,7 @@ export function StudioScreen() {
 
   // ── Live run state (fed by the WebSocket) ──────────────────────────────────
   const [runStatus, setRunStatus] = useState<
-    'connecting' | 'running' | 'finished' | 'disconnected'
+    'connecting' | 'running' | 'finished' | 'disconnected' | 'recovered'
   >('connecting')
   const [mode, setMode] = useState<string>('single')
   const [challengeName, setChallengeName] = useState('')
@@ -181,15 +186,25 @@ export function StudioScreen() {
   // the chosen attempt in the score/telemetry panels.
   const replayTraceRunId = async (traceRunId: string) => {
     followLiveRef.current = false
+    setManualRunId(runId ?? '')
+    const version = ++traceSelectionVersion.current
+    const playbackVersion = playbackControlVersion.current
+    const isStale = () => version !== traceSelectionVersion.current
     try {
       const fetched = await api.get<EpisodeTrace>(`/runs/${traceRunId}/trace`)
+      if (isStale()) return
       setTrace(fetched)
-      setFrameIndex(0)
-      setPlaying(true)
+      if (playbackVersion === playbackControlVersion.current) {
+        setFrameIndex(0)
+        setPlaying(true)
+      } else {
+        setFrameIndex((index) => Math.min(index, Math.max(0, fetched.frames.length - 1)))
+      }
       setStatus('ready')
       setViewMode('physics')
-      void loadBuildStepsForTrace(traceRunId)
-      void loadModelInteractionsForTrace(traceRunId)
+      setLatestDiff(null)
+      void loadBuildStepsForTrace(traceRunId, isStale)
+      void loadModelInteractionsForTrace(traceRunId, isStale)
       // Reflect the picked attempt in the telemetry/score panels.
       const match = Object.entries(traceByAttempt).find(([, v]) => v === traceRunId)
       if (match) {
@@ -199,13 +214,13 @@ export function StudioScreen() {
         if (Number.isFinite(idx)) setLatestAttemptIndex(idx)
         try {
           const sc = await api.get<ScoreCard>(`/runs/${traceRunId}/score`)
-          setLatestScoreByAgent((prev) => ({ ...prev, [aid]: sc }))
+          if (!isStale()) setLatestScoreByAgent((prev) => ({ ...prev, [aid]: sc }))
         } catch {
           /* score is best-effort */
         }
       }
     } catch {
-      setStatus('error')
+      if (!isStale()) setStatus('error')
     }
   }
 
@@ -218,19 +233,23 @@ export function StudioScreen() {
   // Any manual playback action (pause/stop/seek/pick an attempt) turns this off
   // so the user's controls stay authoritative and a live run can't yank the
   // viewport away or un-pause them.
-  const followLiveRef = useRef(true)
-
   const handleTogglePlay = () => {
     followLiveRef.current = false
+    setManualRunId(runId ?? '')
+    playbackControlVersion.current++
     setPlaying((p) => !p)
   }
   const handleStop = () => {
     followLiveRef.current = false
+    setManualRunId(runId ?? '')
+    playbackControlVersion.current++
     setPlaying(false)
     setFrameIndex(0)
   }
   const handleSeek = (index: number) => {
     followLiveRef.current = false
+    setManualRunId(runId ?? '')
+    playbackControlVersion.current++
     setPlaying(false)
     setViewMode('physics')
     setFrameIndex(index)
@@ -239,42 +258,87 @@ export function StudioScreen() {
   useEffect(() => {
     if (!runId) return
     let cancelled = false
+    const selectionVersion = traceSelectionVersion
+    followLiveRef.current = true
+    traceSelectionVersion.current++
 
     // Fetch a trace by run id and auto-play it in the Phaser replay.
     const loadTrace = async (traceRunId: string) => {
+      const version = ++traceSelectionVersion.current
+      const isStale = () => cancelled || version !== traceSelectionVersion.current || !followLiveRef.current
       try {
         const fetched = await api.get<EpisodeTrace>(`/runs/${traceRunId}/trace`)
-        if (cancelled) return
+        if (isStale()) return
         setTrace(fetched)
         setFrameIndex(0)
         setPlaying(true)
         setStatus('ready')
-        void loadBuildStepsForTrace(traceRunId, () => cancelled)
-        void loadModelInteractionsForTrace(traceRunId, () => cancelled)
+        void loadBuildStepsForTrace(traceRunId, isStale)
+        void loadModelInteractionsForTrace(traceRunId, isStale)
       } catch {
-        if (!cancelled) setStatus('error')
+        if (!isStale()) setStatus('error')
       }
     }
 
-    // A finished/historical run isn't in the live orchestrator (evicted, or after
-    // a restart). Replay its persisted trace + score read-only instead of a dead
-    // "unknown run" error. Returns whether the historical trace loaded.
+    // A launch id may have no trace of its own. Recover its saved attempt
+    // evidence read-only; an unavailable live run is not proof it finished.
     const loadHistorical = async (rid: string): Promise<boolean> => {
+      const version = ++traceSelectionVersion.current
+      const isStale = () => cancelled || version !== traceSelectionVersion.current
       try {
-        const fetched = await api.get<EpisodeTrace>(`/runs/${rid}/trace`)
-        if (cancelled) return true
+        let traceId = rid
+        let recoveredParent = false
+        let savedAttempts: RunAttemptSummary[] | null = null
+        let fetched: EpisodeTrace
+        try {
+          fetched = await api.get<EpisodeTrace>(`/runs/${rid}/trace`)
+        } catch (error) {
+          if (!(error instanceof ApiError) || error.status !== 404) throw error
+          savedAttempts = await api.get<RunAttemptSummary[]>(`/runs/${rid}/attempts`)
+          if (isStale()) return true
+          if (savedAttempts.length === 0) {
+            await api.get(`/runs/${rid}/config`)
+            if (!isStale()) {
+              setStatus('error')
+              setErrorDetail('The live run is unavailable and has no saved attempts. It may have been interrupted; no work was restarted.')
+            }
+            return true
+          }
+          const candidates = [...savedAttempts].sort((a, b) => (b.score_total ?? -Infinity) - (a.score_total ?? -Infinity))
+          let savedTrace: EpisodeTrace | null = null
+          for (const attempt of candidates.slice(0, 20)) {
+            if (isStale()) return true
+            try {
+              savedTrace = await api.get<EpisodeTrace>(`/runs/${attempt.trace_run_id}/trace`)
+              traceId = attempt.trace_run_id
+              break
+            } catch {
+              /* Try another saved attempt without starting work. */
+            }
+          }
+          if (!savedTrace) {
+            if (!isStale()) {
+              setStatus('error')
+              setErrorDetail('Saved attempts were found, but none of the first 20 traces could be opened.')
+            }
+            return true
+          }
+          fetched = savedTrace
+          recoveredParent = true
+        }
+        if (isStale()) return true
         setTrace(fetched)
         setFrameIndex(0)
         setPlaying(true)
         setStatus('ready')
-        setRunStatus('finished')
+        setRunStatus(recoveredParent ? 'recovered' : 'finished')
         setViewMode('physics')
-        void loadBuildStepsForTrace(rid, () => cancelled)
-        void loadModelInteractionsForTrace(rid, () => cancelled)
+        void loadBuildStepsForTrace(traceId, isStale)
+        void loadModelInteractionsForTrace(traceId, isStale)
         let openedScore: ScoreCard | null = null
         try {
-          const sc = await api.get<ScoreCard>(`/runs/${rid}/score`)
-          if (!cancelled) {
+          const sc = await api.get<ScoreCard>(`/runs/${traceId}/score`)
+          if (!isStale()) {
             openedScore = sc
             setLatestScoreByAgent({ agent_a: sc })
             if (sc.reward) setReward(sc.reward)
@@ -285,8 +349,8 @@ export function StudioScreen() {
         // Populate the full attempt list so every attempt of this finished run
         // is browsable/replayable — not just the single trace we opened with.
         try {
-          const attempts = await api.get<RunAttemptSummary[]>(`/runs/${rid}/attempts`)
-          if (!cancelled && attempts.length > 0) {
+          const attempts = savedAttempts ?? await api.get<RunAttemptSummary[]>(`/runs/${rid}/attempts`)
+          if (!isStale() && attempts.length > 0) {
             const traceMap: Record<string, string> = {}
             const byAgent: Record<string, AttemptScore[]> = {}
             const discovered = new Set<string>()
@@ -317,7 +381,7 @@ export function StudioScreen() {
                 .map((id) => ({ id, name: id === 'agent_a' ? 'Agent A' : id, role: 'builder' }))
               return additions.length > 0 ? [...prev, ...additions] : prev
             })
-            const opened = attempts.find((a) => a.trace_run_id === rid)
+            const opened = attempts.find((a) => a.trace_run_id === traceId)
             const openedAgent = opened?.agent_id ?? 'agent_a'
             setLatestAgentId(openedAgent)
             setLatestAttemptIndex(opened?.attempt_index ?? 0)
@@ -338,8 +402,12 @@ export function StudioScreen() {
           /* attempt list is best-effort */
         }
         return true
-      } catch {
-        return false
+      } catch (error) {
+        if (isStale()) return true
+        if (error instanceof ApiError && error.status === 404) return false
+        setStatus('error')
+        setErrorDetail('Saved run evidence could not be loaded. Check the connection and try again; no work was restarted.')
+        return true
       }
     }
 
@@ -366,11 +434,15 @@ export function StudioScreen() {
           // Surface the in-flight attempt as soon as it begins, rather than only
           // when its score lands, so the "current attempt" reads as live.
           const id = event.agent_id ?? (event.agent_ids ? 'shared' : agentsRef.current[0]?.id ?? 'agent_a')
-          setLatestAgentId(id)
-          setLatestAttemptIndex(event.attempt_index)
+          if (followLiveRef.current) {
+            setLatestAgentId(id)
+            setLatestAttemptIndex(event.attempt_index)
+          }
           // A new attempt starts a fresh build sequence.
-          setBuildSteps([])
-          setBuildStepIndex(0)
+          if (followLiveRef.current) {
+            setBuildSteps([])
+            setBuildStepIndex(0)
+          }
           break
         }
         case 'attempt_finished':
@@ -380,6 +452,7 @@ export function StudioScreen() {
           setToolLog((prev) => [...prev, event.record])
           break
         case 'design_snapshot':
+          if (!followLiveRef.current) break
           setBuildSteps((prev) => [
             ...prev,
             {
@@ -405,12 +478,12 @@ export function StudioScreen() {
           if (event.by_agent) {
             setOwnershipByAgent(event.by_agent)
             setDesignByAgent((prev) => ({ ...prev, shared: event.summary }))
-            setLatestAgentId('shared')
+            if (followLiveRef.current) setLatestAgentId('shared')
             break
           }
           const id = event.agent_id ?? agentsRef.current[0]?.id ?? 'agent_a'
           setDesignByAgent((prev) => ({ ...prev, [id]: event.summary }))
-          setLatestAgentId(id)
+          if (followLiveRef.current) setLatestAgentId(id)
           break
         }
         case 'trace_ready': {
@@ -426,14 +499,16 @@ export function StudioScreen() {
         }
         case 'score': {
           const id = event.agent_id ?? agentsRef.current[0]?.id ?? 'agent_a'
-          setLatestScoreByAgent((prev) => ({ ...prev, [id]: event.scorecard }))
+          if (followLiveRef.current) setLatestScoreByAgent((prev) => ({ ...prev, [id]: event.scorecard }))
           setBestScoreByAgent((prev) => ({
             ...prev,
             [id]: Math.max(prev[id] ?? -Infinity, event.scorecard.score_total),
           }))
-          setLatestAgentId(id)
-          setLatestAttemptIndex(event.attempt_index)
-          if (event.diff !== undefined) setLatestDiff(event.diff)
+          if (followLiveRef.current) {
+            setLatestAgentId(id)
+            setLatestAttemptIndex(event.attempt_index)
+            if (event.diff !== undefined) setLatestDiff(event.diff)
+          }
           setAttemptsByAgent((prev) => {
             const series = (prev[id] ?? []).filter((a) => a.index !== event.attempt_index)
             series.push({ index: event.attempt_index, scorecard: event.scorecard })
@@ -505,6 +580,7 @@ export function StudioScreen() {
 
     return () => {
       cancelled = true
+      selectionVersion.current++
       wsRef.current = null
       // 1000 = normal closure; tolerate sockets already closed after run_finished.
       try {
@@ -593,6 +669,9 @@ export function StudioScreen() {
 
     setVideoExporting(true)
     setVideoMessage(`Recording ${(durationMs / 1000).toFixed(1)}s`)
+    followLiveRef.current = false
+    setManualRunId(runId ?? '')
+    playbackControlVersion.current++
     setFrameIndex(0)
     setPlaying(true)
     try {
@@ -617,28 +696,34 @@ export function StudioScreen() {
       if (e.code === 'Space') {
         e.preventDefault()
         followLiveRef.current = false
+        setManualRunId(runId ?? '')
+        playbackControlVersion.current++
         setPlaying((p) => !p)
       } else if (e.code === 'ArrowRight') {
         e.preventDefault()
         followLiveRef.current = false
+        setManualRunId(runId ?? '')
+        playbackControlVersion.current++
         setPlaying(false)
         setFrameIndex((i) => Math.min(i + 1, trace.frames.length - 1))
       } else if (e.code === 'ArrowLeft') {
         e.preventDefault()
         followLiveRef.current = false
+        setManualRunId(runId ?? '')
+        playbackControlVersion.current++
         setPlaying(false)
         setFrameIndex((i) => Math.max(i - 1, 0))
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [trace])
+  }, [trace, runId])
 
   const running = runStatus === 'running' || runStatus === 'connecting'
   const disconnected = runStatus === 'disconnected'
   // Below ~1100px the fixed rails squeeze the viewport — stack them instead.
   const narrow = useMediaQuery('(max-width: 1100px)')
-  const topBarStatus = status === 'error' || disconnected
+  const topBarStatus = status === 'error' || disconnected || runStatus === 'recovered'
     ? 'offline'
     : runStatus === 'connecting'
       ? 'connecting'
@@ -680,7 +765,7 @@ export function StudioScreen() {
           const tone =
             status === 'error' || disconnected
               ? 'var(--danger)'
-              : running
+              : running || runStatus === 'recovered'
                 ? 'var(--warn)'
                 : 'var(--ok)'
           const label =
@@ -688,7 +773,9 @@ export function StudioScreen() {
               ? 'Run error'
               : disconnected
                 ? 'Connection lost'
-                : runStatus === 'connecting'
+                : runStatus === 'recovered'
+                  ? 'Saved attempts'
+                  : runStatus === 'connecting'
                   ? 'Connecting…'
                   : runStatus === 'running'
                     ? 'Building…'
@@ -696,6 +783,7 @@ export function StudioScreen() {
           return (
             <span
               style={{ fontSize: 11, color: tone, display: 'flex', alignItems: 'center', gap: 4 }}
+              title={runStatus === 'recovered' ? 'Live execution status is unknown; showing saved attempts.' : undefined}
             >
               <span
                 style={{
@@ -924,7 +1012,7 @@ export function StudioScreen() {
               latest={latestScore}
               latestAgentName={latestAgentName}
               latestAttemptIndex={latestAttemptIndex}
-              running={running}
+              running={running && manualRunId !== (runId ?? '')}
             />
           </div>
         </div>
@@ -1014,7 +1102,7 @@ function ViewportOverlay({
   hint,
 }: {
   status: 'loading' | 'ready' | 'error'
-  runStatus: 'connecting' | 'running' | 'finished' | 'disconnected'
+  runStatus: 'connecting' | 'running' | 'finished' | 'disconnected' | 'recovered'
   hasTrace: boolean
   errorDetail?: string | null
   agentName?: string
