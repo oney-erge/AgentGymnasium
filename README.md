@@ -8,9 +8,9 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 
-![AgentGymnasium Studio replaying a Bridge Builder run: a crate rolls down a ramp and across a bridge to the goal flag while the tool-call log, score card, and design summary update](docs/assets/demo.gif)
+![Qwen3.5 9B, running on a laptop CPU, solves Bridge Builder on its third attempt: the camera follows the crate down the ramp and across the two decks the model built over the ravine, which glow amber under its weight, and the crate reaches the flag](docs/assets/replay.gif)
 
-<sub>The built-in offline demo uses scripted tool calls, so it needs no API key or model.</sub>
+<sub>A real run: Qwen3.5 9B on a laptop CPU, through llama.cpp, on its third attempt (<a href="docs/EXPERIMENTS.md#local-models-on-the-bridge">results</a>). The parts the agent built glow with the force on them.</sub>
 
 </div>
 
@@ -49,6 +49,8 @@ For a repeatable, model-free comparison, run the [versioned bridge example](docs
 Its mock results demonstrate the pipeline, not model intelligence.
 
 ## What you can do
+
+![AgentGymnasium Studio replaying a Bridge Builder run: a crate rolls down a ramp and across a bridge to the goal flag while the tool-call log, score card, and design summary update](docs/assets/demo.gif)
 
 - Build and replay agent attempts in the Simulation Studio, then compare up to
   four replays side by side by simulation time. Download a recorded replay as

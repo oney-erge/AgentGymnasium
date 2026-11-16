@@ -147,3 +147,23 @@ def test_repair_disabled_leaves_rejected():
     # Simulate the runner's gate: repair_loop_enabled=False => no repair call.
     assert records[0].status == ToolCallStatus.rejected
     assert {b.id for b in design.bodies} == {"b1"}
+
+
+def test_repair_leaves_a_duplicate_of_a_world_part_rejected():
+    # The agent re-declares the crate the challenge already placed: renaming it would put a
+    # second crate in the world, so the rejection stands. Its own duplicate is still repaired.
+    from agentgymnasium.core.schemas.design import WORLD_AUTHOR
+
+    design = DesignSpec(
+        name="d",
+        bodies=[
+            BodySpec(id="crate", shape=BodyShape.circle, position=[0.0, 5.0], created_by=WORLD_AUTHOR),
+            BodySpec(id="deck", shape=BodyShape.box, position=[0.0, 0.0], created_by="a"),
+        ],
+    )
+    records = [_dup_record("crate"), _dup_record("deck")]
+    repair_record = _repair_rejected(design, ["create_body"], records)
+
+    assert repair_record is not None
+    assert repair_record.new_body_ids == ["deck_r"]
+    assert {b.id for b in design.bodies} == {"crate", "deck", "deck_r"}

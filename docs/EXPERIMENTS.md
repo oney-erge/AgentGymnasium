@@ -78,6 +78,46 @@ An offline Windows run of this exact pack completed six cells. Both scripted
 variants scored 80 on seeds 7, 11, and 42, so all three paired comparisons
 were ties. This is an example of the output, not a model leaderboard.
 
+### Local models on the bridge
+
+[`bridge-local-qwen35.yaml`](examples/bridge-local-qwen35.yaml) gives two local
+models three attempts each on the standard bridge (world seed 7, four turns per
+attempt). Each model ran in its own llama.cpp `llama-server` (build 11977) on a
+laptop CPU, 6 threads, Q4_K_M weights, thinking off. One run per model, so this is
+an example of what the evidence looks like, not a leaderboard:
+
+| Attempt | Qwen3.5 4B | Qwen3.5 9B |
+| --- | --- | --- |
+| 1 | 23.7 | 16.7 |
+| 2 | **80.0**: reached the goal, 1 part | 16.7 |
+| 3 | 28.1 | **80.0**: reached the goal, 3 parts |
+
+The scripted example also scores 80. Both models delivered the crate within three
+attempts. The 9B's third attempt: two fixed decks across the gap, and the crate
+rolls down the ramp, over them and past the flag (the decks glow with its weight):
+
+![Qwen3.5 9B's third bridge attempt, run on a laptop CPU: the crate rolls down the ramp and across the two decks the model built over the ravine, which glow amber under its weight, and reaches the flag](assets/qwen35-9b-bridge.gif)
+
+Before the agent was told the real ground and sizes, neither model got the crate
+across (best scores 24.6 for the 4B and 49.7 for the 9B). Three things in what the
+agent was told were wrong for this case, and are fixed:
+
+- The world summary said the floor was solid everywhere at y=0. It now says where
+  the floor is solid and where it is open air, from the world's ground spans.
+- Objects were listed by their centres only. Each now comes with its size, extent
+  and top (a segment with its two ends), so a deck can be placed on the anchors.
+- Every agent was told to add a movable body "or nothing will move". With a crate
+  already rolling, the models added crates, a "crate mover" and loose decks, and
+  pinned the crate to posts. When the world has a payload (a crate, ball or cargo
+  it placed), the agent is now told to leave it free and build fixed parts, and a
+  joint to the payload is refused with the reason. The crawl challenge's torso is
+  the agent's own creature to extend, not a payload.
+
+The earlier runs also showed the repair pass doubling the payload: a model that
+re-declared the world's crate got a second crate named `crate_r`. A duplicate of a
+part the world placed is now left rejected. On the CPU the 4B took about 70
+seconds per attempt and the 9B about 3 minutes.
+
 Create a YAML or JSON matrix:
 
 ```yaml

@@ -327,3 +327,37 @@ def test_static_prop_carries_real_shape_alongside_semantic_kind():
     assert deck_prop.shape == "segment"
     assert house_prop.kind == "house"
     assert house_prop.shape == "box"
+
+
+def test_frames_record_the_load_on_the_part_a_falling_box_lands_on():
+    # A heavy box dropped onto a static beam: the beam's load jumps when the box lands and stays
+    # above zero while the box rests on it; parts nothing touches carry no load.
+    from agentgymnasium.engines.pymunk2d.engine import LOAD_FULL_N
+
+    design = DesignSpec(
+        name="load",
+        bodies=[
+            BodySpec(
+                id="beam", shape=BodyShape.segment, position=[0.0, 2.0], size=[4.0], static=True
+            ),
+            BodySpec(
+                id="idle", shape=BodyShape.segment, position=[8.0, 6.0], size=[2.0], static=True
+            ),
+            BodySpec(id="box", shape=BodyShape.box, position=[0.0, 4.0], size=[0.6, 0.6], mass=5.0),
+        ],
+    )
+    trace = Pymunk2DEngine().simulate(design, _world(), duration_seconds=2.0)
+    beam = [frame.loads.get("beam", 0.0) for frame in trace.frames]
+    assert max(beam) > 0.1  # the landing
+    assert 0.0 < beam[-1] < max(beam)  # resting weight, less than the impact
+    assert all(0.0 <= level <= 1.0 for frame in trace.frames for level in frame.loads.values())
+    assert all("idle" not in frame.loads for frame in trace.frames)
+    # Resting: about the box's weight, as a share of the full load.
+    assert abs(beam[-1] - 5.0 * 9.81 / LOAD_FULL_N) < 0.05
+
+
+def test_a_frame_saved_before_loads_existed_reads_as_no_load():
+    from agentgymnasium.core.schemas.trace import Frame
+
+    frame = Frame.model_validate({"t": 0.0, "bodies": {}, "events": []})
+    assert frame.loads == {}

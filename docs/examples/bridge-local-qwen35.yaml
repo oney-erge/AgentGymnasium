@@ -1,0 +1,41 @@
+# Two local models on the bridge, three attempts each. Each model runs in its own llama-server
+# (OpenAI-compatible, here on the CPU), started with an alias so the model name matches /models:
+#   llama-server -m Qwen3.5-9B-Q4_K_M.gguf --alias qwen3.5-9b --port 8781 -c 16384 \
+#     -ngl 0 -t 6 --reasoning off -np 1 --jinja
+#   llama-server -m Qwen3.5-4B-Q4_K_M.gguf --alias qwen3.5-4b --port 8782 ...   (same flags)
+# Results from one run of this pack are in docs/EXPERIMENTS.md ("Local models on the bridge").
+name: bridge-local-qwen35
+base_config:
+  project_name: Bridge with local models
+  scenario:
+    preset: bridge_builder
+    objective: Carry the crate over the real gap.
+    reward: bridge_transport
+  world:
+    template: island_cliff_small
+    seed: 7
+  agents:
+    mode: single
+    participants:
+      - id: builder
+        name: Builder
+        provider: mock
+        model: mock
+  tools:
+    enabled: [create_body, add_beam, add_joint, run_simulation, inspect_score]
+  constraints:
+    max_attempts: 3
+    agent_turns_per_attempt: 4
+models:
+  - id: qwen35-9b
+    label: Qwen3.5 9B (Q4_K_M, local)
+    provider: openai_compatible
+    model: qwen3.5-9b
+    endpoint_url: http://127.0.0.1:8781/v1
+  - id: qwen35-4b
+    label: Qwen3.5 4B (Q4_K_M, local)
+    provider: openai_compatible
+    model: qwen3.5-4b
+    endpoint_url: http://127.0.0.1:8782/v1
+seeds: [7]
+repeats: 1

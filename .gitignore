@@ -39,3 +39,4 @@ Thumbs.db
 visual-artifacts*/
 htmlcov/
 .coverage
+.demo-frames/

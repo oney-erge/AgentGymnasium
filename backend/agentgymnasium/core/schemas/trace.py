@@ -97,6 +97,10 @@ class Frame(BaseModel):
     t: float
     bodies: dict[str, FrameBody]
     events: list[dict] = []
+    # How hard each part was pressed since the previous frame, as a share of LOAD_FULL_N (0..1):
+    # the strongest contact force on it. Parts under almost no load are left out, and a frame
+    # with no load at all saves no "loads" key, so such traces serialize as they always did.
+    loads: dict[str, float] = Field(default_factory=dict, exclude_if=lambda loads: not loads)
 
 
 class EpisodeTrace(BaseModel):

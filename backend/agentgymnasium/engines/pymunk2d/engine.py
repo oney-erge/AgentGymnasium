@@ -21,6 +21,12 @@ _MAX_STEPS = 6000
 _TARGET_FPS = 30.0
 
 
+#: Contact force (newtons) shown as full load in a replay: a frame's load is force / LOAD_FULL_N.
+LOAD_FULL_N = 400.0
+#: Loads under this share of LOAD_FULL_N are not recorded (resting contact, grazes).
+_LOAD_SHOWN = 0.03
+
+
 class Pymunk2DEngine(EngineAdapter):
     name = "pymunk2d"
 
@@ -94,10 +100,7 @@ class Pymunk2DEngine(EngineAdapter):
         body_id_by_object[id(space.static_body)] = GROUND_ID
 
         def collision_pair(arbiter) -> tuple[str, str]:
-            names = [
-                body_id_by_object.get(id(shape.body), GROUND_ID)
-                for shape in arbiter.shapes
-            ]
+            names = [body_id_by_object.get(id(shape.body), GROUND_ID) for shape in arbiter.shapes]
             return tuple(sorted((names[0], names[1])))
 
         def on_contact_started(arbiter, _space, _data) -> bool:
@@ -113,9 +116,16 @@ class Pymunk2DEngine(EngineAdapter):
                 )
             return True
 
+        # Strongest contact force on each part since the last recorded frame (newtons).
+        peak_force: dict[str, float] = {}
+
         def on_contact_solved(arbiter, _space, _data) -> None:
             pair = collision_pair(arbiter)
             impulse = float(arbiter.total_impulse.length)
+            force = impulse / dt if dt > 0 else 0.0
+            for name in pair:
+                if name != GROUND_ID and force > peak_force.get(name, 0.0):
+                    peak_force[name] = force
             if impulse < 40 or pair in stressed_pairs or total_steps <= 0:
                 return
             stressed_pairs.add(pair)
@@ -165,7 +175,10 @@ class Pymunk2DEngine(EngineAdapter):
                         continue
                     width = goal.size[0] if goal.size else 1.0
                     height = goal.size[1] if len(goal.size) > 1 else width
-                    if abs(x - goal.position[0]) <= width / 2 and abs(y - goal.position[1]) <= height / 2:
+                    if (
+                        abs(x - goal.position[0]) <= width / 2
+                        and abs(y - goal.position[1]) <= height / 2
+                    ):
                         seen_goals.add(key)
                         events.append(
                             {
@@ -191,7 +204,8 @@ class Pymunk2DEngine(EngineAdapter):
                                     "type": "object_sorted",
                                     "body_id": spec.id,
                                     "bin_id": bin_id,
-                                    "accepted": not accepts or accepts.lower() in (spec.color or "").lower(),
+                                    "accepted": not accepts
+                                    or accepts.lower() in (spec.color or "").lower(),
                                 }
                             )
                 kill_y = trace.kill_y
@@ -245,7 +259,15 @@ class Pymunk2DEngine(EngineAdapter):
                     y=float(body.position.y),
                     angle=float(body.angle),
                 )
-            trace.frames.append(Frame(t=step * dt, bodies=frame_bodies, events=events or []))
+            loads = {
+                bid: round(min(1.0, force / LOAD_FULL_N), 3)
+                for bid, force in peak_force.items()
+                if force >= _LOAD_SHOWN * LOAD_FULL_N
+            }
+            peak_force.clear()
+            trace.frames.append(
+                Frame(t=step * dt, bodies=frame_bodies, events=events or [], loads=loads)
+            )
 
         # Initial frame at t=0.
         record(0, initial_events)
@@ -283,9 +305,7 @@ class Pymunk2DEngine(EngineAdapter):
         for spec in design.bodies:
             if spec.static:
                 shape_name = (
-                    spec.shape.value
-                    if isinstance(spec.shape, BodyShape)
-                    else str(spec.shape)
+                    spec.shape.value if isinstance(spec.shape, BodyShape) else str(spec.shape)
                 )
                 props.append(
                     StaticProp(

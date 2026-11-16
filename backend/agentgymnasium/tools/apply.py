@@ -12,6 +12,7 @@ from agentgymnasium.core.schemas.design import (
     DesignSpec,
     JointSpec,
     JointType,
+    payload_ids,
 )
 from agentgymnasium.core.schemas.tool import ToolStatus
 from agentgymnasium.core.schemas.toolcall import ToolCallRecord, ToolCallStatus
@@ -249,6 +250,12 @@ def _mutate(design: DesignSpec, agent_id: str, tool: str, args: dict) -> bool:
         if args["body_b"] not in ids:
             raise ValueError(f"body_b '{args['body_b']}' not present")
         by_id = {b.id: b for b in design.bodies}
+        for end in ("body_a", "body_b"):
+            if args[end] in payload_ids(design):
+                raise ValueError(
+                    f"'{args[end]}' is what this challenge moves: it has to stay free, so "
+                    "build what it rolls or slides on instead of joining it"
+                )
         if by_id[args["body_a"]].static and by_id[args["body_b"]].static:
             raise ValueError(
                 "joint requires at least one movable (non-static) body; "

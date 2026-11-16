@@ -5,5 +5,7 @@ import agentgymnasium
 
 
 def test_package_importable():
-    project = tomllib.loads((Path(__file__).resolve().parents[2] / "pyproject.toml").read_text(encoding="utf-8"))
-    assert agentgymnasium.__version__ == project["project"]["version"]
+    # The version the package reports is the one it is released as (pyproject.toml).
+    pyproject = Path(__file__).resolve().parents[2] / "pyproject.toml"
+    expected = tomllib.loads(pyproject.read_text(encoding="utf-8"))["project"]["version"]
+    assert agentgymnasium.__version__ == expected
